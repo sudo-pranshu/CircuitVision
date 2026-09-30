@@ -12,7 +12,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from . import netlist, preprocess, topology
+from . import grammar, netlist, preprocess, simulate, topology
 from .cghd_to_yolo import parse_voc
 from .types import Detection
 
@@ -53,6 +53,8 @@ def main():
     src.add_argument("--weights")
     src.add_argument("--xml")
     ap.add_argument("--out", default="out")
+    ap.add_argument("--no-ocr", action="store_true", help="skip reading values")
+    ap.add_argument("--simulate", action="store_true", help="run ngspice .op")
     a = ap.parse_args()
 
     img = preprocess.load(a.image)
@@ -61,6 +63,9 @@ def main():
     else:
         from .detect import Detector
         dets = Detector(a.weights)(img)
+    if not a.no_ocr and any(d.cls == "text" and not d.text for d in dets):
+        from .ocr import read_values
+        read_values(img, dets)
 
     comps, labels = run(img, dets)
     out = Path(a.out)
@@ -70,6 +75,12 @@ def main():
     (out / f"{stem}.cir").write_text(spice)
     cv2.imwrite(str(out / f"{stem}_overlay.png"), overlay(img, comps, labels))
     print(spice)
+
+    errors = grammar.validate(spice)
+    print("validation:", "OK" if not errors else "; ".join(errors))
+    if a.simulate:
+        for k, v in simulate.operating_point(spice).items():
+            print(f"  {k:<12} {v:.4g}")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,8 @@ requires-python = ">=3.10"
 dependencies = ["opencv-python", "numpy"]
 
 [project.optional-dependencies]
-detect = ["ultralytics"]
+detect = ["ultralytics", "easyocr"]
+app = ["gradio>=5"]
 dev = ["pytest"]
 
 [build-system]
