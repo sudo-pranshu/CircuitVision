@@ -30,6 +30,7 @@ import numpy as np
 from . import grammar, netlist, preprocess, simulate
 from .cghd_to_yolo import find_image
 from .detector_eval import iou_matrix
+from . import orientation as orient_mod
 from .orientation import POLARIZED
 from .pipeline import detections_from_xml, run
 from .types import Detection
@@ -156,6 +157,10 @@ def main():
     acc = lambda ok, n: round(stage[ok] / stage[n], 4) if stage[n] else None
     summary = {
         "drafters": a.drafters, "images": len(gt_rows), "ngspice": sim,
+        "rotation_convention": {"PLUS_AT_0": orient_mod.PLUS_AT_0,
+                                "CGHD_CLOCKWISE": orient_mod.CGHD_CLOCKWISE,
+                                "source": orient_mod.CONVENTION_SOURCE},
+        "detector_conf": det.conf if det else None,
         "gt_boxes": {
             "orientation_accuracy": acc("gt_orient_ok", "gt_orient_n"), "orientation_n": stage["gt_orient_n"],
             "ocr_exact_match": acc("gt_ocr_ok", "gt_ocr_n"), "ocr_n": stage["gt_ocr_n"],

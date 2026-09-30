@@ -2,19 +2,34 @@
 
 ## Status
 
-| Result | Kind | State |
+Every result carries one of three labels: **REAL CGHD**, **SYNTHETIC/CONTROLLED** or **UNTESTED**.
+
+| Result | Label | Evidence |
 |---|---|---|
-| Voltage divider end to end (V(2) = 0.4545 V) | Synthetic | Verified (`tests/test_pipeline.py`) |
-| Wire tracing, crossovers, grammar, simulation | Synthetic | Verified (unit tests) |
-| Orientation SVM on drawn diode crops (≥ 95%) | Synthetic | Verified (`tests/test_orientation.py`) |
-| Text → netlist: 8/8 handwritten sentences | Controlled | Verified (`tests/test_text2netlist.py`) |
-| CGHD dataset audit, rotation convention | **Real** | **Not run yet** |
-| YOLOv8s detection on test drafter 12 | **Real** | **Not run yet** |
-| Downstream stages on real photos (GT boxes / detector) | **Real** | **Not run yet** |
+| Voltage divider end to end (V(2) = 0.4545 V) | SYNTHETIC/CONTROLLED | `tests/test_pipeline.py` |
+| Wire tracing, crossovers, grammar, simulation | SYNTHETIC/CONTROLLED | Unit tests |
+| Orientation SVM on drawn diode crops (≥ 95%) | SYNTHETIC/CONTROLLED | `tests/test_orientation.py` |
+| Text → netlist: 8/8 handwritten sentences | SYNTHETIC/CONTROLLED | `tests/test_text2netlist.py` |
+| Notebook logic: gates, logging, failure stop, evidence bundle | SYNTHETIC/CONTROLLED | Executed locally on a fake CGHD tree |
+| CGHD audit, rotation convention | UNTESTED | Awaiting the Colab run and Gate 1 |
+| YOLOv8s detection on test drafter 12 | UNTESTED | Awaiting the Colab run |
+| Downstream stages on real photos (GT boxes / detector) | UNTESTED | Awaiting the Colab run |
+| `train.py`, `detector_eval.py`, `ocr.py` on a GPU | UNTESTED | PyTorch is unavailable in the build environment |
 
-No real-data number exists yet. Nothing in this repository should be reported as a real-photo result until `baseline_v1` has been run.
+No REAL CGHD number exists yet. Nothing here may be reported as a real-photo result until `baseline_v1` has run.
 
-Why it hasn't run: the build environment can't reach Zenodo, GitLab or Kaggle to fetch CGHD, and it has no GPU. Running the experiment is on Colab.
+Why it hasn't run: the build environment can't reach Zenodo, GitLab or Kaggle, and has no GPU. The experiment runs on Colab.
+
+## Human verification gates
+
+`notebooks/train_colab.ipynb` contains two gate cells whose `assert` stops execution, including under "Run all", until you approve them.
+
+- **Gate 1, after the audit and rotation sheets:** set `GATE1_APPROVED`, plus `PLUS_AT_0` and `CGHD_CLOCKWISE` as read from the real sheets. The cell exports them as `CIRCUITVISION_PLUS_AT_0` and `CIRCUITVISION_CGHD_CLOCKWISE`, and every later step records which convention it used and its source.
+  - The code defaults are **unverified** assumptions.
+  - If the sheets are inconclusive, leave the convention as `None`. Orientation is then skipped and reported as UNTESTED.
+- **Gate 2, after the label overlays:** set `GATE2_APPROVED` only if the boxes visibly sit on their symbols.
+
+Both approvals are saved, with your notes, to `gates/gate1.json` and `gates/gate2.json`.
 
 ## baseline_v1: how to reproduce
 
@@ -30,12 +45,14 @@ unzip cghd-zenodo-14.zip -d data/cghd_raw      # CGHD=<folder that contains draf
 # 1. Audit (assumes nothing): drafters, pairs, classes, boxes, sizes/EXIF, rotation and text fields
 python -m circuitvision.audit --cghd $CGHD --out $EXP/audit
 
-# 2. Rotation convention: inspect the sheets, then set PLUS_AT_0 / CGHD_CLOCKWISE in orientation.py
+# 2. Rotation sheets -> GATE 1: inspect, then export the convention you read off them
 python -m circuitvision.visualize rotation --cghd $CGHD --out $EXP/rotation_check
+export CIRCUITVISION_PLUS_AT_0=<left|right|top|bottom> CIRCUITVISION_CGHD_CLOCKWISE=<0|1>
 
 # 3. Convert (split by drafter: val 11, test 12) and inspect the overlays
 python -m circuitvision.cghd_to_yolo --cghd $CGHD --out data/yolo --val-drafters 11 --test-drafters 12
 python -m circuitvision.visualize labels --yolo data/yolo --out $EXP/label_check -n 24
+# GATE 2: continue only if the overlays are correct
 
 # 4. Train (fixed config: train.BASELINE, seed 0, deterministic)
 python -m circuitvision.train --data data/yolo/dataset.yaml --exp $EXP
@@ -69,8 +86,10 @@ python -m circuitvision.evaluate --cghd $CGHD --drafters 12 --exp $EXP \
 ### Output layout (`experiments/baseline_v1/`)
 
 ```
-commit.txt, dataset_md5.txt
-audit/            audit.md, audit.json, raw_xml_samples.txt
+EVIDENCE_README.md, commit.txt, dataset_md5.txt, gpu.txt
+gates/            gate1.json, gate2.json   (human approvals + notes)
+logs/             stdout/stderr of every step
+audit/            audit.md, audit.json, raw_xml_samples.txt, raw_xml_full_example.xml
 rotation_check/   rotation_<label>.png                    (STOP: read before step 6)
 conversion_stats.json
 label_check/      24 overlays + index.txt                 (STOP: inspect before step 4)
@@ -82,18 +101,24 @@ orientation.json, models/
 downstream/       gt_boxes.csv, detector.csv, summary.json
 ```
 
-Never committed: the CGHD data, `data/`, `runs/`, `*.pt`, `experiments/` and the evidence zip.
+Never committed: the CGHD data, `data/`, `runs/`, `*.pt`, `experiments/` and the evidence zip. The evidence zip leaves out `runs/`, `models/` and checkpoints.
 
 ## What each downstream number means
 
 | Stage | Metric | Caveat |
 |---|---|---|
-| Orientation | Accuracy vs CGHD `<rotation>` | Only as valid as the convention verified in step 2 |
+| Orientation | Accuracy vs CGHD `<rotation>` | Only as valid as the convention set at Gate 1; UNTESTED if Gate 1 left it `None` |
 | OCR | Exact match vs CGHD `<text>` on GT text boxes | Strict string match |
 | Topology | Share of elements with exactly 2 terminals | **Proxy.** CGHD has no ground-truth netlists, so this measures plausibility, not correctness |
 | Netlist | Passes grammar + semantic checks | |
 | Simulation | ngspice returns an operating point | |
 | Detector vs GT | `struct_match`: same element counts per class and same node count | Not full graph isomorphism |
+
+Two confidence thresholds are in play:
+- The detector feeding the downstream pipeline uses `conf = 0.35`, recorded in `downstream/summary.json`.
+- The qualitative analysis in `detector_eval` uses `conf = 0.25`.
+
+mAP is computed by ultralytics over all thresholds.
 
 In ground-truth-box mode, the netlist uses the ground-truth rotation and text as oracle inputs, so its netlist numbers isolate topology.
 

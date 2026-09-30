@@ -48,3 +48,22 @@ def test_polarity_sets_terminal_order():
     nets180, _ = topology.extract_nets(mask, [Detection("diode", D, rotation=180)])
     assert len(nets0[0]) == 2
     assert nets180[0] == nets0[0][::-1]
+
+
+def test_convention_from_environment():
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+    code = ("from circuitvision import orientation as O;"
+            "print(O.PLUS_AT_0, O.CGHD_CLOCKWISE, O.from_cghd('90'), O.positive_side('diode', 0), O.CONVENTION_SOURCE)")
+    env = {k: v for k, v in os.environ.items() if not k.startswith("CIRCUITVISION_")}
+    env["PYTHONPATH"] = str(Path(__file__).parents[1] / "src")
+    default = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True).stdout
+    assert default.startswith("left False 90 left code default (UNVERIFIED)")
+    env.update(CIRCUITVISION_PLUS_AT_0="right", CIRCUITVISION_CGHD_CLOCKWISE="1")
+    set_ = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True).stdout
+    assert set_.startswith("right True 270 right environment")
+    env["CIRCUITVISION_PLUS_AT_0"] = "up"
+    bad = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True)
+    assert bad.returncode != 0 and "must be one of" in bad.stderr

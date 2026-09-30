@@ -107,8 +107,12 @@ def run_val(model, data: Path, out: Path, imgsz: int):
                                       "ap50": float(met.box.ap50[i]), "ap50_95": float(met.box.ap[i])}
     overall = {"precision": float(met.box.mp), "recall": float(met.box.mr),
                "map50": float(met.box.map50), "map50_95": float(met.box.map)}
-    np.savetxt(out / "confusion_matrix.csv", met.confusion_matrix.matrix, fmt="%d", delimiter=",",
-               header=",".join(CLASSES + ["background"]))
+    cm = getattr(getattr(met, "confusion_matrix", None), "matrix", None)
+    if cm is not None:                 # attribute location differs across ultralytics versions
+        np.savetxt(out / "confusion_matrix.csv", cm, fmt="%d", delimiter=",",
+                   header=",".join(CLASSES + ["background"]))
+    else:
+        print("confusion matrix array not exposed by this ultralytics version; see the PNG plots")
     for png in Path(met.save_dir).glob("*.png"):
         shutil.copy(png, out / png.name)
     return overall, per_class

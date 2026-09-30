@@ -4,8 +4,11 @@ Convention inside CircuitVision:
   rotation is in degrees counter-clockwise, one of 0/90/180/270, and at
   rotation 0 the positive terminal (anode, or + of a source) is on PLUS_AT_0.
 
-CGHD stores a rotation per symbol. Check CGHD_CLOCKWISE and PLUS_AT_0 against
-2-3 dataset images before trusting polarity results (see README).
+CGHD stores a rotation per symbol. The defaults below are UNVERIFIED
+assumptions. After inspecting the rotation sheets (Gate 1 in EXPERIMENTS.md),
+set the verified values without editing code:
+  CIRCUITVISION_PLUS_AT_0=left|right|top|bottom
+  CIRCUITVISION_CGHD_CLOCKWISE=0|1
 
 Classifier: HOG features + linear SVM (OpenCV), one model per class, trained
 on CGHD crops. Each crop is also rotated by 90/180/270 with the label shifted,
@@ -15,6 +18,7 @@ so every labelled crop yields 4 training samples.
 """
 import argparse
 import json
+import os
 from pathlib import Path
 
 import cv2
@@ -27,8 +31,13 @@ OPPOSITE = {"left": "right", "right": "left", "top": "bottom", "bottom": "top"}
 POLARIZED = {"diode", "voltage_source"}
 ANGLES = (0, 90, 180, 270)
 
-PLUS_AT_0 = "left"
-CGHD_CLOCKWISE = False
+PLUS_AT_0 = os.environ.get("CIRCUITVISION_PLUS_AT_0", "left")
+CGHD_CLOCKWISE = os.environ.get("CIRCUITVISION_CGHD_CLOCKWISE", "0") == "1"
+CONVENTION_SOURCE = ("environment (set after Gate 1)"
+                     if {"CIRCUITVISION_PLUS_AT_0", "CIRCUITVISION_CGHD_CLOCKWISE"} & set(os.environ)
+                     else "code default (UNVERIFIED)")
+if PLUS_AT_0 not in SIDES:
+    raise ValueError(f"CIRCUITVISION_PLUS_AT_0 must be one of {SIDES}, got {PLUS_AT_0!r}")
 
 
 def from_cghd(rotation) -> int | None:
@@ -148,7 +157,8 @@ def main():
     train_data = collect_cghd(a.cghd, exclude=test)
     test_data = collect_cghd(a.cghd, drafters=test)
 
-    svms, report = {}, {"convention": {"PLUS_AT_0": PLUS_AT_0, "CGHD_CLOCKWISE": CGHD_CLOCKWISE},
+    svms, report = {}, {"convention": {"PLUS_AT_0": PLUS_AT_0, "CGHD_CLOCKWISE": CGHD_CLOCKWISE,
+                                        "source": CONVENTION_SOURCE},
                          "test_drafters": sorted(test), "classes": {}}
     for cls, items in train_data.items():
         samples = [s for crop, r in items for s in rotated_samples(crop, r)]
