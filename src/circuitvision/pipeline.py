@@ -14,13 +14,14 @@ import numpy as np
 
 from . import grammar, netlist, preprocess, simulate, topology
 from .cghd_to_yolo import parse_voc
+from .orientation import from_cghd
 from .types import Detection
 
 
 def detections_from_xml(xml_path) -> list[Detection]:
     _, _, objs = parse_voc(Path(xml_path))
-    return [Detection(cls, tuple(int(v) for v in (x1, y1, x2, y2)), 1.0, text)
-            for cls, x1, y1, x2, y2, text in objs]
+    return [Detection(cls, tuple(int(v) for v in (x1, y1, x2, y2)), 1.0, text, from_cghd(rot))
+            for cls, x1, y1, x2, y2, text, rot in objs]
 
 
 def run(img, dets: list[Detection]):
@@ -55,6 +56,7 @@ def main():
     ap.add_argument("--out", default="out")
     ap.add_argument("--no-ocr", action="store_true", help="skip reading values")
     ap.add_argument("--simulate", action="store_true", help="run ngspice .op")
+    ap.add_argument("--orient", help="folder with orientation models (polarity)")
     a = ap.parse_args()
 
     img = preprocess.load(a.image)
@@ -66,6 +68,9 @@ def main():
     if not a.no_ocr and any(d.cls == "text" and not d.text for d in dets):
         from .ocr import read_values
         read_values(img, dets)
+    if a.orient:
+        from .orientation import OrientationModel
+        OrientationModel.load(a.orient).annotate(img, dets)
 
     comps, labels = run(img, dets)
     out = Path(a.out)

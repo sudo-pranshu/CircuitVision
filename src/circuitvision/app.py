@@ -10,11 +10,15 @@ from . import grammar, netlist, simulate
 from .pipeline import overlay, run
 
 
-def build_ui(weights: str, use_ocr: bool = True):
+def build_ui(weights: str, use_ocr: bool = True, orient: str | None = None):
     import gradio as gr
     from .detect import Detector
 
     detector = Detector(weights)
+    orienter = None
+    if orient:
+        from .orientation import OrientationModel
+        orienter = OrientationModel.load(orient)
 
     def process(rgb):
         if rgb is None:
@@ -24,6 +28,8 @@ def build_ui(weights: str, use_ocr: bool = True):
         if use_ocr:
             from .ocr import read_values
             read_values(img, dets)
+        if orienter:
+            orienter.annotate(img, dets)
         comps, labels = run(img, dets)
         spice = netlist.to_spice(comps)
         errors = grammar.validate(spice)
@@ -53,9 +59,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--weights", required=True)
     ap.add_argument("--no-ocr", action="store_true")
+    ap.add_argument("--orient", help="folder with orientation models")
     ap.add_argument("--share", action="store_true", help="public link for demos")
     a = ap.parse_args()
-    build_ui(a.weights, not a.no_ocr).launch(share=a.share)
+    build_ui(a.weights, not a.no_ocr, a.orient).launch(share=a.share)
 
 
 if __name__ == "__main__":

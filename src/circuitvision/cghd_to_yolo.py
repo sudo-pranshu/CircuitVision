@@ -28,13 +28,14 @@ def parse_voc(xml_path: Path):
             continue
         b = o.find("bndbox")
         x1, y1, x2, y2 = (float(b.findtext(k)) for k in ("xmin", "ymin", "xmax", "ymax"))
-        objs.append((cls, x1, y1, x2, y2, o.findtext("text")))
+        rot = o.findtext("rotation")
+        objs.append((cls, x1, y1, x2, y2, o.findtext("text"), rot))
     return w, h, objs
 
 
 def to_yolo_lines(w, h, objs):
     lines = []
-    for cls, x1, y1, x2, y2, _ in objs:
+    for cls, x1, y1, x2, y2, *_ in objs:
         cx, cy = (x1 + x2) / 2 / w, (y1 + y2) / 2 / h
         bw, bh = (x2 - x1) / w, (y2 - y1) / h
         lines.append(f"{CLASSES.index(cls)} {cx:.6f} {cy:.6f} {bw:.6f} {bh:.6f}")

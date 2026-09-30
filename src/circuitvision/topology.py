@@ -6,9 +6,12 @@ ring just outside each box to see which nets touch that component.
 Crossovers are masked too, then their opposite sides are re-joined
 (left<->right, top<->bottom) so crossing wires don't short.
 """
+from dataclasses import replace
+
 import cv2
 import numpy as np
 
+from .orientation import OPPOSITE, SIDES, positive_side
 from .types import Detection
 
 MASKED = {"resistor", "capacitor", "inductor", "voltage_source", "diode",
@@ -58,8 +61,7 @@ def extract_nets(mask: np.ndarray, dets: list[Detection], pad: int = 6,
              symbol strokes leak a few px past them.
     min_wire: wire fragments smaller than this (px) are ignored as residue.
     """
-    dets = [Detection(d.cls, _clip(d.box, mask.shape, inflate), d.conf, d.text)
-            for d in dets]
+    dets = [replace(d, box=_clip(d.box, mask.shape, inflate)) for d in dets]
     wires = mask.copy()
     for d in dets:
         if d.cls in MASKED:
@@ -99,10 +101,16 @@ def extract_nets(mask: np.ndarray, dets: list[Detection], pad: int = 6,
         if i not in rings or d.cls == "crossover":
             continue
         s = rings[i]
-        # Order terminals: horizontal parts left->right, vertical top->bottom
+        # Order terminals: positive/anode side first when orientation is known,
+        # otherwise geometric (horizontal left->right, vertical top->bottom)
+        pos = positive_side(d.cls, d.rotation)
         x1, y1, x2, y2 = d.box
-        order = ("left", "right", "top", "bottom") if (x2 - x1) >= (y2 - y1) \
-            else ("top", "bottom", "left", "right")
+        if pos:
+            order = (pos, OPPOSITE[pos]) + tuple(k for k in SIDES if k not in (pos, OPPOSITE[pos]))
+        elif (x2 - x1) >= (y2 - y1):
+            order = ("left", "right", "top", "bottom")
+        else:
+            order = ("top", "bottom", "left", "right")
         nets = []
         for side in order:
             for lab in sorted(s[side]):

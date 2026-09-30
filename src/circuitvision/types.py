@@ -7,6 +7,7 @@ class Detection:
     box: tuple[int, int, int, int]  # x1, y1, x2, y2 (pixels)
     conf: float = 1.0
     text: str | None = None       # for "text" detections (OCR result)
+    rotation: int | None = None   # 0/90/180/270, for polarized parts
 
 
 @dataclass
