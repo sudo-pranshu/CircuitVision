@@ -14,7 +14,7 @@ cd ~/CircuitVision
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
 brew install ngspice
-pytest -q                   # 10 tests (2 skip if ngspice is missing)
+pytest -q                   # 16 tests (2 skip if ngspice is missing)
 ```
 
 ## Try it without a trained model
@@ -67,6 +67,41 @@ python -m circuitvision.pipeline my_circuit.jpg --weights best.pt --simulate
 python -m circuitvision.app --weights best.pt          # web demo at localhost:7860
 ```
 
+## Polarity (diodes, sources)
+
+Rotation is stored in degrees CCW, with `+`/anode on the left at 0°. The orientation classifier is HOG + linear SVM per class, trained on CGHD crops with 4× rotation augmentation:
+
+```bash
+python -m circuitvision.orientation --cghd ~/data/cghd --out models
+python -m circuitvision.pipeline my_circuit.jpg --weights best.pt --orient models --simulate
+```
+
+Before trusting polarity, check `CGHD_CLOCKWISE` and `PLUS_AT_0` in `orientation.py` against 2–3 CGHD images.
+
+## Text → netlist (NLP)
+
+```bash
+python -m circuitvision.nlp.text2netlist train
+python -m circuitvision.nlp.text2netlist "a 5V battery driving a 10k resistor in series with a 1k resistor"
+```
+
+The pipeline runs in four steps:
+
+1. Tokenize.
+2. Tag with an HMM (Viterbi, add-k smoothing, 5% word dropout for unseen words).
+3. Chunk each component noun with its value.
+4. Parse the series/parallel structure, using right attachment for "which is in parallel with".
+
+Semantic constraints then correct the tagger: the value's unit decides the class, a source must be in volts, and kilo/mega values imply a resistor. The source is placed across the load, and the result is validated by `grammar.py`.
+
+| Test set | Token accuracy | Exact circuit match |
+|---|---|---|
+| Same templates as training | 1.000 | 1.000 (not informative) |
+| Held-out phrasings and nouns | 0.879 | 0.998* |
+| 8 handwritten sentences (`tests/test_text2netlist.py`) | — | 8/8 |
+
+\* The unit constraints were designed after inspecting held-out errors, so this row is optimistic. The handwritten set is the clean check.
+
 ## Evaluate
 
 ```bash
@@ -98,20 +133,26 @@ python -m circuitvision.evaluate --images D/images --annotations D/annotations -
 | `grammar.py` | CFG for the SPICE subset, Earley recognizer, semantic constraints | NLP: parsing (M3), constraints (M4) |
 | `simulate.py` | ngspice batch run, operating point | |
 | `evaluate.py` | Batch metrics → CSV | Precision / accuracy (M2) |
+| `orientation.py` | HOG + SVM rotation classifier, polarity convention | Image processing |
+| `nlp/hmm.py` | HMM tagger, Viterbi, per-tag P/R/F1 | NLP: stochastic tagging (M2) |
+| `nlp/parser.py`, `nlp/tree.py` | Chunking, series/parallel semantics, netlist | NLP: parsing, compositional semantics (M3–M4) |
+| `nlp/corpus.py` | Synthetic tagged corpus with a held-out phrasing split | |
 | `app.py` | Gradio demo | |
 
 ## Scope and limitations
 
 - **Classes:** resistor, capacitor, inductor, voltage source, diode, ground, junction, crossover, text.
 - **Two-terminal elements only.** Anything else is flagged as `* WARNING` in the netlist and by the validator.
-- **Terminal order follows geometry** (left→right or top→bottom), so diode and source polarity isn't inferred yet.
+- **Polarity needs orientation models.** Without them, terminal order falls back to geometry (left→right or top→bottom).
 
 ## Roadmap
 
 - [ ] Train the baseline YOLOv8s and report test mAP.
 - [ ] Measure wire-tracing accuracy on CGHD test images.
-- [ ] Infer polarity for diodes and sources from the symbol's orientation.
-- [ ] NLP extension: text description → netlist, with generation constrained by `grammar.py`.
+- [x] Polarity for diodes and sources from the symbol's orientation.
+- [x] Text description → netlist (HMM tagger + series/parallel parser).
+- [ ] Verify the CGHD rotation convention and train the orientation models.
+- [ ] Text → netlist: nested groupings ("A and B in parallel, in series with C"), a larger handwritten test set.
 
 ## Credits
 
