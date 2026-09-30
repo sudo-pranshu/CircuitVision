@@ -14,6 +14,7 @@ so every labelled crop yields 4 training samples.
   python -m circuitvision.orientation --cghd ~/data/cghd --out models
 """
 import argparse
+import json
 from pathlib import Path
 
 import cv2
@@ -140,13 +141,15 @@ def main():
     ap.add_argument("--cghd", required=True, type=Path)
     ap.add_argument("--out", default="models", type=Path)
     ap.add_argument("--test-drafters", default="12")
+    ap.add_argument("--exp", type=Path, help="write orientation.json here")
     a = ap.parse_args()
 
     test = {f"drafter_{d}" for d in a.test_drafters.split(",")}
     train_data = collect_cghd(a.cghd, exclude=test)
     test_data = collect_cghd(a.cghd, drafters=test)
 
-    svms = {}
+    svms, report = {}, {"convention": {"PLUS_AT_0": PLUS_AT_0, "CGHD_CLOCKWISE": CGHD_CLOCKWISE},
+                         "test_drafters": sorted(test), "classes": {}}
     for cls, items in train_data.items():
         samples = [s for crop, r in items for s in rotated_samples(crop, r)]
         if len({r for _, r in samples}) < 2:
@@ -156,13 +159,23 @@ def main():
         y = np.array([r for _, r in samples])
         svms[cls] = OrientationModel.train_svm(X, y)
         print(f"{cls}: trained on {len(samples)} samples")
+        report["classes"][cls] = {"train_crops": len(items), "train_samples": len(samples),
+                                  "train_label_counts": {str(k): int(v) for k, v in
+                                                         zip(*np.unique(y, return_counts=True))}}
 
     model = OrientationModel(svms)
     model.save(a.out)
     for cls, items in test_data.items():
         if cls in svms and items:
+            raw_acc = accuracy(model, cls, items)
             acc = accuracy(model, cls, [s for c, r in items for s in rotated_samples(c, r)])
-            print(f"{cls}: test accuracy {acc:.3f} on {len(items) * 4} samples")
+            print(f"{cls}: test accuracy {raw_acc:.3f} on {len(items)} real crops, "
+                  f"{acc:.3f} on {len(items) * 4} rotated crops")
+            report["classes"][cls].update(test_crops=len(items), test_accuracy_real=raw_acc,
+                                          test_accuracy_rotated=acc)
+    if a.exp:
+        a.exp.mkdir(parents=True, exist_ok=True)
+        (a.exp / "orientation.json").write_text(json.dumps(report, indent=1))
 
 
 if __name__ == "__main__":

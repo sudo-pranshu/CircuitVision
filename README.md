@@ -14,7 +14,7 @@ cd ~/CircuitVision
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
 brew install ngspice
-pytest -q                   # 16 tests (2 skip if ngspice is missing)
+pytest -q                   # 28 tests (some skip if ngspice is missing)
 ```
 
 ## Try it without a trained model
@@ -49,15 +49,23 @@ Convert it to YOLO format. The split is by drafter, so the same drawing never ap
 python -m circuitvision.cghd_to_yolo --cghd ~/data/cghd --out data/yolo
 ```
 
-## Train the detector
+## Real-data experiment (baseline_v1)
 
-The recommended route is Colab: open `notebooks/train_colab.ipynb`, set the runtime to T4 GPU, and run all cells. The notebook downloads CGHD, converts it, trains, saves `best.pt` to your Drive, and evaluates on the test drafter.
+**No real-photo results exist yet.** [EXPERIMENTS.md](EXPERIMENTS.md) separates what has been verified on synthetic or controlled data from what is still pending on real CGHD photos, and lists the exact commands.
+
+Run the experiment with `notebooks/train_colab.ipynb` on a Colab T4. In order, it:
+
+1. Audits the dataset.
+2. Produces rotation-convention sheets (stop point: check them before continuing).
+3. Converts the dataset and draws label overlays (stop point: check them before continuing).
+4. Trains with a fixed seed.
+5. Reports test-drafter-12 metrics with qualitative failures.
+6. Evaluates each downstream stage twice, with ground-truth boxes and with detector boxes.
 
 To train locally on your Mac's GPU (MPS), start with a smoke test:
 
 ```bash
-python -m circuitvision.train --data data/yolo/dataset.yaml --quick
-python -m circuitvision.train --data data/yolo/dataset.yaml --epochs 100
+python -m circuitvision.train --data data/yolo/dataset.yaml --exp /tmp/smoke --quick
 ```
 
 ## Run on your own photo
@@ -104,21 +112,10 @@ Semantic constraints then correct the tagger: the value's unit decides the class
 
 ## Evaluate
 
-```bash
-# Wire tracing alone, using ground-truth boxes
-python -m circuitvision.evaluate --images D/images --annotations D/annotations
+- **Detector:** `python -m circuitvision.detector_eval` gives per-class P, R, AP50 and AP50-95, a confusion matrix, and qualitative failures.
+- **Downstream stages:** `python -m circuitvision.evaluate --cghd ... --drafters 12 --exp ...` scores each stage with ground-truth boxes and with detector boxes, reported separately.
 
-# End to end, comparing the detector's output against the ground-truth-box run
-python -m circuitvision.evaluate --images D/images --annotations D/annotations --weights best.pt
-```
-
-| Metric | Meaning |
-|---|---|
-| mAP@0.5 | Detection quality on the test drafter (printed by `train`) |
-| `terminals_ok` | Share of elements with exactly 2 terminals |
-| `valid` | Netlist passes the grammar and semantic checks |
-| `simulates` | ngspice produced an operating point |
-| `struct_match` | Detector netlist matches the ground-truth-box netlist in element counts per class and node count |
+EXPERIMENTS.md explains what each metric means and which ones are proxies.
 
 ## Module map
 
@@ -132,7 +129,9 @@ python -m circuitvision.evaluate --images D/images --annotations D/annotations -
 | `netlist.py` | Ground → node 0, nearest-label values, SPICE output | |
 | `grammar.py` | CFG for the SPICE subset, Earley recognizer, semantic constraints | NLP: parsing (M3), constraints (M4) |
 | `simulate.py` | ngspice batch run, operating point | |
-| `evaluate.py` | Batch metrics → CSV | Precision / accuracy (M2) |
+| `audit.py`, `visualize.py` | Dataset audit, label overlays, rotation sheets | |
+| `detector_eval.py` | Test metrics, IoU matching, failure categories | Precision / recall (M2) |
+| `evaluate.py` | Stage-wise downstream metrics, GT vs detector boxes | |
 | `orientation.py` | HOG + SVM rotation classifier, polarity convention | Image processing |
 | `nlp/hmm.py` | HMM tagger, Viterbi, per-tag P/R/F1 | NLP: stochastic tagging (M2) |
 | `nlp/parser.py`, `nlp/tree.py` | Chunking, series/parallel semantics, netlist | NLP: parsing, compositional semantics (M3–M4) |
@@ -147,8 +146,7 @@ python -m circuitvision.evaluate --images D/images --annotations D/annotations -
 
 ## Roadmap
 
-- [ ] Train the baseline YOLOv8s and report test mAP.
-- [ ] Measure wire-tracing accuracy on CGHD test images.
+- [ ] Run baseline_v1 on Colab (see EXPERIMENTS.md).
 - [x] Polarity for diodes and sources from the symbol's orientation.
 - [x] Text description → netlist (HMM tagger + series/parallel parser).
 - [ ] Verify the CGHD rotation convention and train the orientation models.
