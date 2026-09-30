@@ -20,6 +20,18 @@ No REAL CGHD number exists yet. Nothing here may be reported as a real-photo res
 
 Why it hasn't run: the build environment can't reach Zenodo, GitLab or Kaggle, and has no GPU. The experiment runs on Colab.
 
+## Environment
+
+Colab preinstalls several OpenCV distributions (`opencv-python`, `opencv-python-headless`, `opencv-contrib-python`), and they all write to the same `site-packages/cv2/` folder. Installing ultralytics and easyocr makes pip replace or remove some of them. That can leave `cv2/` hollow: `import cv2` still works, but its attributes are gone. The first run of baseline_v1 failed this way (`module 'cv2' has no attribute 'HOGDescriptor'`).
+
+`scripts/pin_opencv.sh` fixes it:
+1. It uninstalls every OpenCV variant.
+2. It deletes any leftover `cv2/` folder.
+3. It installs exactly `opencv-python-headless==4.10.0.84` without dependencies.
+4. It verifies that `HOGDescriptor` and `ml.SVM` work.
+
+This must be the last package step. `pip check` will then report that ultralytics wants `opencv-python`; that's expected, because both provide the same `cv2` module. `scripts/check_opencv.py` re-verifies before training and before each evaluation step, and `pip_freeze.txt` records the final environment.
+
 ## Human verification gates
 
 `notebooks/train_colab.ipynb` contains two gate cells whose `assert` stops execution, including under "Run all", until you approve them.
@@ -37,6 +49,8 @@ The whole experiment is `notebooks/train_colab.ipynb`, run on a Colab T4 GPU. Th
 
 ```bash
 pip install -e ".[detect]"            # plus: apt install ngspice  (or brew install ngspice)
+bash scripts/pin_opencv.sh            # LAST package step: exactly one OpenCV (headless 4.10.0.84)
+python -m pytest -q tests
 EXP=experiments/baseline_v1
 
 # 0. Data: Zenodo 14042961, cghd-zenodo-14.zip, md5 ab1cde6feb5edaafbde711cd2059a2f4

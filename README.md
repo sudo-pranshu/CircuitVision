@@ -13,8 +13,9 @@ photo ─► preprocess ─► YOLO detection ─► wire tracing ─► value O
 cd ~/CircuitVision
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
+bash scripts/pin_opencv.sh  # exactly one OpenCV build (see EXPERIMENTS.md, Environment)
 brew install ngspice
-pytest -q                   # 28 tests (some skip if ngspice is missing)
+pytest -q                   # 29 tests (some skip if ngspice is missing)
 ```
 
 ## Try it without a trained model
