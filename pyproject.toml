@@ -1,0 +1,19 @@
+[project]
+name = "circuitvision"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["opencv-python", "numpy"]
+
+[project.optional-dependencies]
+detect = ["ultralytics"]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
