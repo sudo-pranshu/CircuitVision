@@ -32,6 +32,22 @@ Colab preinstalls several OpenCV distributions (`opencv-python`, `opencv-python-
 
 This must be the last package step. `pip check` will then report that ultralytics wants `opencv-python`; that's expected, because both provide the same `cv2` module. `scripts/check_opencv.py` re-verifies before training and before each evaluation step, and `pip_freeze.txt` records the final environment.
 
+### Dataset location and audit speed
+
+The CGHD zip is downloaded once and cached on Drive (`MyDrive/CircuitVision/data/cghd-zenodo-14.zip`). Each run:
+1. Copies the zip to local disk.
+2. Checks it against Zenodo's MD5.
+3. Extracts it to `/content/cghd`.
+
+Every dataset step reads from local disk; only results are written to Drive.
+
+The audit's image check used to decode every full-size photo twice. It now works like this:
+- **Dimensions:** for JPEGs, the raw and EXIF-applied sizes come from the file header. `tests/test_audit_images.py` shows these match two full `cv2.imread` decodes for all 8 EXIF orientations, for truncated files and for unreadable files.
+- **Readability:** one real decode at 1/8 scale.
+- **Everything else:** other formats, and any image where the header path fails, fall back to the two full decodes.
+
+The image pass runs on all CPUs and prints `Audited N/total images` every 100 images. Every image is still checked. On a 2-vCPU machine with 6 MB phone photos, it went from 370 to 36 ms per image.
+
 ## Human verification gates
 
 `notebooks/train_colab.ipynb` contains two gate cells whose `assert` stops execution, including under "Run all", until you approve them.

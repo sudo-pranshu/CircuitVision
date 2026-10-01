@@ -4,15 +4,25 @@
 
 Writes audit.json, audit.md and raw_xml_samples.txt (verbatim <object> XML of
 polarized symbols, so the rotation/text fields can be read by eye).
+
+Image checks run first, in parallel, with a progress line every 100 images.
+For JPEGs the raw and displayed (EXIF-applied) sizes come from the file header
+(identical to what cv2.imread reports; see tests/test_audit_images.py) and
+readability comes from one real decode at 1/8 scale. Any other format, or any
+image where that path fails, falls back to two full cv2 decodes.
 """
 import argparse
 import json
+import os
 import re
+import time
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from multiprocessing import Pool
 from pathlib import Path
 
 import cv2
+from PIL import Image
 
 from .cghd_to_yolo import IMG_EXT, find_image, split_of
 from .classes import map_cghd
@@ -25,13 +35,55 @@ def drafter_key(p: Path):
     return int(m.group()) if m else 10 ** 6
 
 
-def image_sizes(path: Path):
-    """-> (raw w,h ignoring EXIF, displayed w,h with EXIF applied)."""
+def image_sizes_full(path: Path):
+    """Reference method: two full decodes. -> (raw w,h, displayed w,h) or (None, None)."""
     raw = cv2.imread(str(path), cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
     shown = cv2.imread(str(path), cv2.IMREAD_COLOR)
     if raw is None or shown is None:
         return None, None
     return (raw.shape[1], raw.shape[0]), (shown.shape[1], shown.shape[0])
+
+
+def image_sizes(path: Path):
+    """-> (raw w,h ignoring EXIF, displayed w,h with EXIF applied) or (None, None)."""
+    try:
+        with Image.open(path) as im:
+            if im.format == "JPEG":
+                raw = im.size
+                swap = im.getexif().get(274, 1) in (5, 6, 7, 8)    # EXIF orientation
+                if cv2.imread(str(path), cv2.IMREAD_REDUCED_GRAYSCALE_8) is not None:
+                    return raw, (raw[::-1] if swap else raw)
+    except Exception:
+        pass
+    return image_sizes_full(path)
+
+
+def _sizes_worker(path: str):
+    cv2.setNumThreads(1)                     # one process per core, no oversubscription
+    return path, image_sizes(Path(path))
+
+
+def all_image_sizes(paths: list[Path], workers: int | None = None, every: int = 100) -> dict:
+    """Image sizes for every path, in parallel, printing progress."""
+    workers = workers or os.cpu_count() or 1
+    total, out, t0 = len(paths), {}, time.time()
+    print(f"Auditing {total} images with {workers} worker(s)", flush=True)
+    jobs = [str(p) for p in paths]
+
+    def consume(results):
+        for i, (p, sizes) in enumerate(results, 1):
+            out[p] = sizes
+            if i % every == 0 or i == total:
+                el = time.time() - t0
+                eta = el / i * (total - i)
+                print(f"Audited {i}/{total} images  ({el:.0f}s elapsed, ~{eta:.0f}s left)", flush=True)
+
+    if workers > 1:
+        with Pool(workers) as pool:
+            consume(pool.imap_unordered(_sizes_worker, jobs, chunksize=8))
+    else:
+        consume(map(_sizes_worker, jobs))
+    return out
 
 
 def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: int = 5):
@@ -45,6 +97,16 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
          "rotation_present": Counter(), "text_present": Counter(),
          "text_examples": defaultdict(list), "object_fields": Counter(), "image_dims": Counter()}
     samples, sample_files = [], set()
+
+    sizes = {}
+    if read_images:
+        todo = []
+        for d in drafters:
+            stems = {p.stem for p in (d / "images").glob("*") if p.suffix.lower() in IMG_EXT}
+            for xml in sorted((d / "annotations").glob("*.xml")):
+                if xml.stem in stems:
+                    todo.append(find_image(d / "images", xml.stem))
+        sizes = all_image_sizes(todo)
 
     for d in drafters:
         split = split_of(d.name, val, test)
@@ -67,7 +129,7 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
             w = int(float(root.findtext("size/width") or 0))
             h = int(float(root.findtext("size/height") or 0))
             if read_images:
-                raw, shown = image_sizes(find_image(d / "images", xml.stem))
+                raw, shown = sizes[str(find_image(d / "images", xml.stem))]
                 if raw is None:
                     r["size_check"]["unreadable_image"] += 1
                 else:

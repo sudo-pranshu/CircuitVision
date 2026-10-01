@@ -2,7 +2,7 @@
 name = "circuitvision"
 version = "0.1.0"
 requires-python = ">=3.10"
-dependencies = ["opencv-python", "numpy"]
+dependencies = ["opencv-python", "numpy", "pillow"]
 
 [project.optional-dependencies]
 detect = ["ultralytics", "easyocr"]
