@@ -2,9 +2,12 @@
 __pycache__/
 *.egg-info/
 .pytest_cache/
-data/
-runs/
-out/
+# local datasets, training runs and outputs (repository root only;
+# src/.../nlp/data and tests/data are tracked)
+/data/
+/runs/
+/out/
+/experiments/
 *.pt
-experiments/
 *.zip
+*.cache
