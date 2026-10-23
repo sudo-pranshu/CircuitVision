@@ -181,6 +181,20 @@ python -m circuitvision.nlp.evaluate --set src/circuitvision/nlp/data/handwritte
 python -m circuitvision.report_tables                                       # -> results/tables.md
 ```
 
+### Detector-mode end to end (SYNTHETIC)
+
+A YOLOv8s model trained for 40 CPU epochs on synthetic CGHD-shaped drawings was run through the full
+downstream pipeline on synthetic drafter 12 (6 images). `results/synthetic_detector_e2e.json`:
+
+| Mode | Valid netlist | Simulates | Topology match | Exact match | Op-point match |
+|---|---|---|---|---|---|
+| GT boxes | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| Detector boxes | 1.00 | 0.83 | 0.83 | 0.67 | 0.67 |
+
+Orientation on held-out drafter 12: 5/5. OCR: 0.958 exact, 0.990 character accuracy (24 labels).
+This only shows that detector mode runs end to end and that detection errors propagate as expected.
+It says nothing about real photos.
+
 ## Results: baseline_v1
 
 *Pending. To be filled only from files in the evidence bundle.*

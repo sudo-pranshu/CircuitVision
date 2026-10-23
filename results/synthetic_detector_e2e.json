@@ -1,0 +1,131 @@
+{
+ "label": "SYNTHETIC/CONTROLLED - not evidence about real photos",
+ "setup": "YOLOv8s trained 40 epochs on CPU on synthetic CGHD-shaped drafters (not the baseline config); evaluated on synthetic drafter 12 (6 images)",
+ "summary": {
+  "drafters": "12",
+  "images": 6,
+  "in_scope_images": 6,
+  "ngspice": true,
+  "rotation_convention": {
+   "PLUS_AT_0": "left",
+   "CGHD_CLOCKWISE": false,
+   "source": "environment (set after Gate 1)"
+  },
+  "detector_conf": 0.35,
+  "images_by_frame": {
+   "frame_upright": 6
+  },
+  "orientation": {
+   "gt_boxes_accuracy": 1.0,
+   "gt_boxes_n": 5,
+   "detector_accuracy_on_matched_gt": 1.0
+  },
+  "ocr": {
+   "labels": 24,
+   "exact": 0.9583,
+   "char_accuracy": 0.9896,
+   "value_like_labels": 24,
+   "value_like_exact": 0.9583,
+   "value_like_char_accuracy": 0.9896
+  },
+  "gt_boxes": {
+   "all": {
+    "images": 6,
+    "topology_terminals_ok_PROXY": 1.0,
+    "netlist_valid": 1.0,
+    "simulates": 1.0,
+    "ground_rule": {
+     "implicit: most connected net": 2,
+     "symbol": 3,
+     "implicit: first source, second terminal": 1
+    },
+    "top_validation_errors": [],
+    "consistency_PROXY": {
+     "pairs": 0,
+     "consistent": null,
+     "drawings": 0
+    },
+    "vs_reference": {
+     "topology_match": 1.0,
+     "exact_match": 1.0,
+     "op_match": 1.0,
+     "n": 6
+    }
+   },
+   "in_scope_only": {
+    "images": 6,
+    "topology_terminals_ok_PROXY": 1.0,
+    "netlist_valid": 1.0,
+    "simulates": 1.0,
+    "ground_rule": {
+     "implicit: most connected net": 2,
+     "symbol": 3,
+     "implicit: first source, second terminal": 1
+    },
+    "top_validation_errors": [],
+    "consistency_PROXY": {
+     "pairs": 0,
+     "consistent": null,
+     "drawings": 0
+    },
+    "vs_reference": {
+     "topology_match": 1.0,
+     "exact_match": 1.0,
+     "op_match": 1.0,
+     "n": 6
+    }
+   }
+  },
+  "detector": {
+   "all": {
+    "images": 6,
+    "topology_terminals_ok_PROXY": 1.0,
+    "netlist_valid": 1.0,
+    "simulates": 0.8333,
+    "ground_rule": {
+     "implicit: most connected net": 2,
+     "symbol": 3,
+     "implicit: first source, second terminal": 1
+    },
+    "top_validation_errors": [],
+    "consistency_PROXY": {
+     "pairs": 0,
+     "consistent": null,
+     "drawings": 0
+    },
+    "vs_reference": {
+     "topology_match": 0.8333,
+     "exact_match": 0.6667,
+     "op_match": 0.6667,
+     "n": 6
+    },
+    "struct_match_vs_gt_boxes": 0.8333,
+    "isomorphic_to_gt_boxes": 0.8333
+   },
+   "in_scope_only": {
+    "images": 6,
+    "topology_terminals_ok_PROXY": 1.0,
+    "netlist_valid": 1.0,
+    "simulates": 0.8333,
+    "ground_rule": {
+     "implicit: most connected net": 2,
+     "symbol": 3,
+     "implicit: first source, second terminal": 1
+    },
+    "top_validation_errors": [],
+    "consistency_PROXY": {
+     "pairs": 0,
+     "consistent": null,
+     "drawings": 0
+    },
+    "vs_reference": {
+     "topology_match": 0.8333,
+     "exact_match": 0.6667,
+     "op_match": 0.6667,
+     "n": 6
+    },
+    "isomorphic_to_gt_boxes": 0.8333
+   }
+  }
+ }
+}
