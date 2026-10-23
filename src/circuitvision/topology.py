@@ -52,16 +52,35 @@ def _ring_labels(labels, box, pad):
     return {k: set(np.unique(v)) - {0} for k, v in sides.items()}
 
 
-def extract_nets(mask: np.ndarray, dets: list[Detection], pad: int = 6,
-                 gap_close: int = 3, inflate: int = 3, min_wire: int = 40):
-    """Return {detection index: [net ids]} with nets numbered from 1.
+def symbol_scale(dets: list[Detection], ref: float = 24.0) -> float:
+    """Drawing scale relative to the size the defaults were tuned for: median
+    short side of the element boxes / ref. Phone photos are often 4-10x larger."""
+    sides = [min(d.box[2] - d.box[0], d.box[3] - d.box[1]) for d in dets
+             if d.cls in MASKED and d.cls not in ("text", "crossover", OTHER)]
+    return max(1.0, float(np.median(sides)) / ref) if sides else 1.0
 
-    mask: 255 = ink. pad: ring width for terminal search (px).
-    gap_close: dilation to bridge small pen gaps in wires (px).
-    inflate: grow boxes before masking, since detector boxes are tight and
-             symbol strokes leak a few px past them.
-    min_wire: wire fragments smaller than this (px) are ignored as residue.
+
+def extract_nets(mask: np.ndarray, dets: list[Detection], pad: int | None = None,
+                 gap_close: int | None = None, inflate: int | None = None,
+                 min_wire: int | None = None):
+    """Return ({detection index: [net ids]}, wire label image), nets numbered from 1.
+
+    mask: 255 = ink. All size parameters default to values scaled by
+    symbol_scale(), so a 4000 px phone photo behaves like a 400 px drawing:
+      pad        ring width for terminal search (px)
+      gap_close  dilation to bridge small pen gaps in wires (px)
+      inflate    grow boxes before masking (detector boxes are tight and
+                 symbol strokes leak a few px past them)
+      min_wire   wire fragments smaller than this area (px) are residue
+    Fragments that never leave the neighbourhood of a single masked box (pieces
+    of the symbol's own outline sticking out of a tight box) are not wires.
     """
+    s = symbol_scale(dets)
+    pad = pad if pad is not None else round(6 * s)
+    gap_close = gap_close if gap_close is not None else max(3, round(3 * s))
+    inflate = inflate if inflate is not None else round(3 * s)
+    min_wire = min_wire if min_wire is not None else round(40 * s * s)
+
     dets = [replace(d, box=_clip(d.box, mask.shape, inflate)) for d in dets]
     wires = mask.copy()
     for d in dets:
@@ -74,9 +93,17 @@ def extract_nets(mask: np.ndarray, dets: list[Detection], pad: int = 6,
         wires = cv2.dilate(wires, k)
 
     n, labels, stats, _ = cv2.connectedComponentsWithStats(wires, connectivity=8)
-    small = stats[:, cv2.CC_STAT_AREA] < min_wire
-    small[0] = False
-    labels[small[labels]] = 0
+    drop = stats[:, cv2.CC_STAT_AREA] < min_wire
+    reach = pad + gap_close
+    boxes = [_clip(d.box, mask.shape, reach) for d in dets if d.cls in MASKED]
+    for lab in range(1, n):
+        if drop[lab]:
+            continue
+        lx, ly, lw, lh = stats[lab, :4]
+        drop[lab] = any(bx1 <= lx and by1 <= ly and lx + lw <= bx2 and ly + lh <= by2
+                        for bx1, by1, bx2, by2 in boxes)
+    drop[0] = False
+    labels[drop[labels]] = 0
     dsu = DSU(n)
 
     rings = {i: _ring_labels(labels, d.box, pad) for i, d in enumerate(dets)

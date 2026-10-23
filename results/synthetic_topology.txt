@@ -1,0 +1,13 @@
+condition                divider  parallel_rc_     crossover  series_rlc_c  bridge_junct    mean
+clean                       1.00          1.00          1.00          1.00          1.00    1.00
+photo_scale_x6              1.00          1.00          1.00          1.00          1.00    1.00
+grid_paper                  1.00          1.00          1.00          1.00          1.00    1.00
+shadow                      1.00          1.00          1.00          1.00          1.00    1.00
+noise_blur_jpeg             1.00          1.00          1.00          1.00          1.00    1.00
+all_combined                1.00          1.00          1.00          1.00          1.00    1.00
+pen_gaps                    1.00          1.00          1.00          1.00          1.00    1.00
+pencil_on_grid              1.00          1.00          1.00          1.00          1.00    1.00
+wobbly_lines                1.00          0.67          1.00          1.00          0.67    0.87
+box_jitter_10pct            1.00          1.00          1.00          1.00          1.00    1.00
+box_jitter_15pct            1.00          1.00          0.67          1.00          1.00    0.93
+exact-topology rate over 11 conditions x 5 circuits x 3 seeds: 0.982

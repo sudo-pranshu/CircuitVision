@@ -10,19 +10,30 @@ def load(path: str) -> np.ndarray:
     return img
 
 
-def binarize(img: np.ndarray, block: int = 35, c: int = 12) -> np.ndarray:
+def binarize(img: np.ndarray, kernel: int | None = None, min_contrast: int = 12) -> np.ndarray:
     """Return uint8 mask: 255 = ink stroke, 0 = paper.
 
-    Adaptive threshold handles uneven lighting / shadows from phone photos;
-    a small opening removes paper texture and grid-paper speckle.
+    1. Estimate the local paper brightness with a grey-level closing (removes
+       every dark feature thinner than the kernel: pen strokes, grid lines,
+       text), which also follows shadows and uneven lighting.
+    2. Ink contrast = (paper - pixel) / paper, i.e. relative to the local
+       paper brightness, so a stroke in shadow scores like one in daylight.
+       Grid lines and noise are faint, pen strokes are dark: Otsu on the
+       contrast histogram separates the two, with a floor of `min_contrast`
+       (on a 0-255 scale).
     """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    mask = cv2.adaptiveThreshold(
-        gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, block, c
-    )
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
-    return mask
+    k = kernel or max(15, (min(gray.shape[:2]) // 60) | 1)
+    paper = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (k, k)))
+    dark = (255.0 * cv2.subtract(paper, gray) / np.maximum(paper, 1)).astype(np.uint8)
+    cand = dark[dark > min_contrast]
+    thr = min_contrast
+    if cand.size > 100:
+        otsu, _ = cv2.threshold(cand.reshape(1, -1), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        thr = max(min_contrast, int(otsu))
+    mask = np.where(dark > thr, 255, 0).astype(np.uint8)
+    return cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
 
 
 def remove_small_blobs(mask: np.ndarray, min_area: int = 30) -> np.ndarray:

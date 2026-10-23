@@ -27,6 +27,12 @@ def detections_from_xml(xml_path) -> list[Detection]:
             for o in objs]
 
 
+def trace(img, dets: list[Detection]) -> dict[int, list[int]]:
+    """Wire tracing only: {detection index: [net ids]}."""
+    mask = preprocess.remove_small_blobs(preprocess.binarize(img))
+    return topology.extract_nets(mask, dets)[0]
+
+
 def run(img, dets: list[Detection]):
     mask = preprocess.remove_small_blobs(preprocess.binarize(img))
     nets, labels = topology.extract_nets(mask, dets)

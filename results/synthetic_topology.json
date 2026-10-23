@@ -1,0 +1,85 @@
+{
+ "label": "SYNTHETIC/CONTROLLED",
+ "metric": "exact terminal-net partition",
+ "seeds": 3,
+ "overall": 0.9818181818181818,
+ "results": {
+  "clean": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "photo_scale_x6": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "grid_paper": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "shadow": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "noise_blur_jpeg": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "all_combined": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "pen_gaps": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "pencil_on_grid": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "wobbly_lines": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 0.6666666666666666,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 0.6666666666666666
+  },
+  "box_jitter_10pct": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 1.0,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  },
+  "box_jitter_15pct": {
+   "divider": 1.0,
+   "parallel_rc_junctions": 1.0,
+   "crossover": 0.6666666666666666,
+   "series_rlc_corners": 1.0,
+   "bridge_junctions": 1.0
+  }
+ }
+}
