@@ -1,158 +1,96 @@
 # CircuitVision
 
-Automated conversion of hand-drawn circuit diagrams into simulatable SPICE netlists, using deep learning and image processing.
+Automated conversion of hand-drawn circuit diagrams into validated, simulatable SPICE netlists, using computer vision, image processing and NLP.
 
 ```
-photo ─► preprocess ─► YOLO detection ─► wire tracing ─► value OCR ─► netlist ─► grammar check ─► ngspice
-          (binarize)    (components)      (nets)          (EasyOCR)    (.cir)     (CFG + Earley)    (.op)
+photo ─► binarize ─► YOLOv8 ─► orientation ─► wire tracing ─► OCR ─► netlist ─► CFG/Earley ─► ngspice
+         (paper-     (9        (HOG + SVM,     (nets,          (Easy- (.cir)    + semantic     (.op)
+          relative    classes)  polarity)       crossovers)     OCR)              checks
+          contrast)
+text ─► tokenize ─► HMM tagger (Viterbi) ─► chunking + series/parallel parser ─► netlist ─► same checks
 ```
 
-## Setup (macOS, Apple Silicon)
+## Status
+
+**No real-photo results exist yet.** The pipeline is implemented and tested, and every stage has been executed end to end on CPU against synthetic data in the real CGHD format. The real CGHD experiment (`baseline_v1`) is ready to run on Colab. See [EXPERIMENTS.md](EXPERIMENTS.md); every result there is labelled **REAL CGHD**, **SYNTHETIC/CONTROLLED** or **UNTESTED**.
+
+| Result (all synthetic or controlled) | Value | Source |
+|---|---|---|
+| Wire tracing on synthetic photos with known graphs (11 conditions) | 0.994 exact topology | `results/synthetic_topology.json` |
+| Text → netlist, fresh 20-sentence test set (evaluated once) | 0.90 exact circuit, 1.00 token accuracy | `results/nlp_eval_fresh.json` |
+| Text → netlist, 30-sentence set (before → after development) | 0.80 → 1.00 exact (after is optimistic) | `results/nlp_eval*.json` |
+
+All tables: `results/tables.md`, regenerated with `python -m circuitvision.report_tables`.
+
+## Setup
 
 ```bash
-cd ~/CircuitVision
+git clone https://github.com/sudo-pranshu/CircuitVision.git && cd CircuitVision
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
-bash scripts/pin_opencv.sh  # exactly one OpenCV build (see EXPERIMENTS.md, Environment)
-brew install ngspice
-pytest -q                   # 29 tests (some skip if ngspice is missing)
+bash scripts/pin_opencv.sh        # exactly one OpenCV build; run after every pip install
+brew install ngspice              # Linux: apt install ngspice
+pytest -q                         # ~105 tests, a few skip without ngspice
 ```
 
-## Try it without a trained model
+Only the base install is needed for wire tracing, netlists, grammar, simulation, NLP and the tests (`pip install -e ".[dev]"`). `detect` adds YOLO and EasyOCR (PyTorch); `app` adds Gradio.
 
-The example ships with ground-truth boxes, so it runs every stage except detection:
+## Usage
 
 ```bash
+# Image -> netlist with ground-truth boxes (no model needed)
 python -m circuitvision.pipeline examples/divider.png --xml examples/divider.xml --simulate
+
+# Image -> netlist with a trained detector (and optional orientation models)
+python -m circuitvision.pipeline photo.jpg --weights best.pt --orient models --simulate
+python -m circuitvision.app --weights best.pt                 # web demo, localhost:7860
+
+# Text -> netlist
+python -m circuitvision.nlp.text2netlist "a 9V battery driving a 1k resistor in series with (a 2k resistor in parallel with a 3k resistor)"
 ```
 
-Expected output:
+The pipeline writes `out/<name>.cir` and `out/<name>_overlay.png`, with each net coloured. Every netlist states which ground rule was used: the ground symbol, or an implicit ground when the drawing has none.
 
-```
-V1 1 0 DC 5
-R1 1 2 10k
-R2 2 0 1k
-validation: OK
-  v(1)  5
-  v(2)  0.4545
-```
+## Real-data experiment
 
-The pipeline writes `out/divider.cir` and `out/divider_overlay.png`, which colours each detected net.
+Open `notebooks/train_colab.ipynb` in Colab on a T4 and choose Run all. It runs these steps:
 
-## Dataset: CGHD
+1. Caches CGHD v14 on Drive and checks its MD5.
+2. Audits the full dataset, with progress output.
+3. Draws rotation sheets, then stops at **Gate 1**: you confirm the rotation convention.
+4. Converts the dataset to YOLO format and draws label overlays, then stops at **Gate 2**: you confirm the labels.
+5. Trains YOLOv8s with a fixed config and seed.
+6. Evaluates on test drafter 12.
+7. Evaluates every downstream stage twice, with ground-truth boxes and with detector boxes.
+8. Writes the results tables and an evidence zip.
 
-- Zenodo: https://zenodo.org/records/14042961 (about 4.4 GB, CC BY 3.0, J. Bayer et al.)
-- About 3k phone photos of hand-drawn circuits with Pascal VOC XML annotations, organised as `drafter_<k>/{images,annotations}`.
-
-Convert it to YOLO format. The split is by drafter, so the same drawing never appears in both training and test data:
-
-```bash
-python -m circuitvision.cghd_to_yolo --cghd ~/data/cghd --out data/yolo
-```
-
-## Real-data experiment (baseline_v1)
-
-**No real-photo results exist yet.** [EXPERIMENTS.md](EXPERIMENTS.md) separates what has been verified on synthetic or controlled data from what is still pending on real CGHD photos, and lists the exact commands.
-
-Run the experiment with `notebooks/train_colab.ipynb` on a Colab T4. In order, it:
-
-1. Audits the dataset.
-2. Produces rotation-convention sheets (stop point: check them before continuing).
-3. Converts the dataset and draws label overlays (stop point: check them before continuing).
-4. Trains with a fixed seed.
-5. Reports test-drafter-12 metrics with qualitative failures.
-6. Evaluates each downstream stage twice, with ground-truth boxes and with detector boxes.
-
-To train locally on your Mac's GPU (MPS), start with a smoke test:
-
-```bash
-python -m circuitvision.train --data data/yolo/dataset.yaml --exp /tmp/smoke --quick
-```
-
-## Run on your own photo
-
-```bash
-python -m circuitvision.pipeline my_circuit.jpg --weights best.pt --simulate
-python -m circuitvision.app --weights best.pt          # web demo at localhost:7860
-```
-
-## Polarity (diodes, sources)
-
-Rotation is stored in degrees CCW, with `+`/anode on the left at 0°. The orientation classifier is HOG + linear SVM per class, trained on CGHD crops with 4× rotation augmentation:
-
-```bash
-python -m circuitvision.orientation --cghd ~/data/cghd --out models
-python -m circuitvision.pipeline my_circuit.jpg --weights best.pt --orient models --simulate
-```
-
-Before trusting polarity, check `CGHD_CLOCKWISE` and `PLUS_AT_0` in `orientation.py` against 2–3 CGHD images.
-
-## Text → netlist (NLP)
-
-```bash
-python -m circuitvision.nlp.text2netlist train
-python -m circuitvision.nlp.text2netlist "a 5V battery driving a 10k resistor in series with a 1k resistor"
-```
-
-The pipeline runs in four steps:
-
-1. Tokenize.
-2. Tag with an HMM (Viterbi, add-k smoothing, 5% word dropout for unseen words).
-3. Chunk each component noun with its value.
-4. Parse the series/parallel structure, using right attachment for "which is in parallel with".
-
-Semantic constraints then correct the tagger: the value's unit decides the class, a source must be in volts, and kilo/mega values imply a resistor. The source is placed across the load, and the result is validated by `grammar.py`.
-
-| Test set | Token accuracy | Exact circuit match |
-|---|---|---|
-| Same templates as training | 1.000 | 1.000 (not informative) |
-| Held-out phrasings and nouns | 0.879 | 0.998* |
-| 8 handwritten sentences (`tests/test_text2netlist.py`) | — | 8/8 |
-
-\* The unit constraints were designed after inspecting held-out errors, so this row is optimistic. The handwritten set is the clean check.
-
-## Evaluate
-
-- **Detector:** `python -m circuitvision.detector_eval` gives per-class P, R, AP50 and AP50-95, a confusion matrix, and qualitative failures.
-- **Downstream stages:** `python -m circuitvision.evaluate --cghd ... --drafters 12 --exp ...` scores each stage with ground-truth boxes and with detector boxes, reported separately.
-
-EXPERIMENTS.md explains what each metric means and which ones are proxies.
+The shell equivalents and the full configuration are in EXPERIMENTS.md.
 
 ## Module map
 
-| File | Role | Syllabus link |
+| File | Role | Course link |
 |---|---|---|
-| `preprocess.py` | Adaptive thresholding, speckle removal | Image processing |
-| `cghd_to_yolo.py` | CGHD XML → YOLO labels, split by drafter | |
-| `detect.py`, `train.py` | YOLOv8 detection; training with auto device selection | CV / deep learning |
-| `topology.py` | Masks boxes, labels wire regions, reads terminal rings, handles crossovers | Image processing |
-| `ocr.py` | Reads component values from text boxes | CV + text recognition |
-| `netlist.py` | Ground → node 0, nearest-label values, SPICE output | |
-| `grammar.py` | CFG for the SPICE subset, Earley recognizer, semantic constraints | NLP: parsing (M3), constraints (M4) |
-| `simulate.py` | ngspice batch run, operating point | |
-| `audit.py`, `visualize.py` | Dataset audit, label overlays, rotation sheets | |
-| `detector_eval.py` | Test metrics, IoU matching, failure categories | Precision / recall (M2) |
-| `evaluate.py` | Stage-wise downstream metrics, GT vs detector boxes | |
-| `orientation.py` | HOG + SVM rotation classifier, polarity convention | Image processing |
-| `nlp/hmm.py` | HMM tagger, Viterbi, per-tag P/R/F1 | NLP: stochastic tagging (M2) |
-| `nlp/parser.py`, `nlp/tree.py` | Chunking, series/parallel semantics, netlist | NLP: parsing, compositional semantics (M3–M4) |
-| `nlp/corpus.py` | Synthetic tagged corpus with a held-out phrasing split | |
-| `app.py` | Gradio demo | |
+| `preprocess.py` | Binarisation: grey closing estimates the paper, contrast relative to the paper, Otsu (handles grid paper and shadows) | Image processing |
+| `cghd_to_yolo.py` | CGHD VOC parsing (rotation in `<bndbox>`, mirror), explicit class map, EXIF-aware loading, YOLO export split by drafter | |
+| `audit.py`, `visualize.py` | Dataset audit with convention evidence, label overlays, rotation sheets | |
+| `detect.py`, `train.py`, `detector_eval.py` | YOLOv8 inference, fixed-config training, test metrics and failure categories | CV / deep learning; P/R (M2) |
+| `orientation.py` | HOG + linear SVM rotation classifier, polarity convention | Image processing |
+| `topology.py` | Box masking, wire components, terminal rings, crossovers; all sizes scale with symbol size | Image processing |
+| `ocr.py`, `netlist.py` | EasyOCR values; RKM codes (4k7), unit/class checks, one label per element, implicit ground | |
+| `grammar.py` | CFG for the SPICE subset, Earley recogniser, semantic checks | NLP: parsing (M3), constraints (M4) |
+| `simulate.py`, `compare.py` | ngspice operating point; graph isomorphism and operating-point equivalence against a reference | |
+| `evaluate.py`, `report_tables.py` | Stage-wise metrics (GT vs detector, in-scope subset, proxies labelled), tables from artifacts | |
+| `synth.py` | Synthetic photos with known graphs: topology benchmark and CGHD-shaped test data | |
+| `nlp/` | HMM tagger (Viterbi), chunking, series/parallel/nested parser, synthetic corpus, frozen evaluation sets | NLP: tagging (M2), parsing and semantics (M3–M4) |
 
-## Scope and limitations
+## Limitations
 
-- **Classes:** resistor, capacitor, inductor, voltage source, diode, ground, junction, crossover, text.
-- **Two-terminal elements only.** Anything else is flagged as `* WARNING` in the netlist and by the validator.
-- **Polarity needs orientation models.** Without them, terminal order falls back to geometry (left→right or top→bottom).
-
-## Roadmap
-
-- [ ] Run baseline_v1 on Colab (see EXPERIMENTS.md).
-- [x] Polarity for diodes and sources from the symbol's orientation.
-- [x] Text description → netlist (HMM tagger + series/parallel parser).
-- [ ] Verify the CGHD rotation convention and train the orientation models.
-- [ ] Text → netlist: nested groupings ("A and B in parallel, in series with C"), a larger handwritten test set.
+- **Two-terminal elements only.** Transistors, ICs, switches, lamps and similar symbols are out of scope: they're masked so they can't short wires, and metrics are also reported on images without them.
+- **Topology accuracy on real photos can't be measured exactly.** CGHD v14 has no ground-truth circuit graphs. On real data, topology is reported through proxies (terminal counts, and consistency across photos of the same drawing). Exact topology is measured only on synthetic data.
+- **The rotation convention must be confirmed at Gate 1.** Until then, polarity results are unverified, and mirrored polarized symbols are excluded.
+- **Text → netlist covers series/parallel descriptions.** It doesn't handle bridges or circuits that need named nodes, and it misses some phrasings: "330R", "a pair of".
+- **The split differs from the CGHD paper's** (theirs tests on drafters 23–24), so results aren't directly comparable.
 
 ## Credits
 
-Dataset: J. Bayer et al., *A Public Ground-Truth Dataset for Handwritten Circuit Diagram Images* (CGHD), CC BY 3.0.
+Dataset: F. Thoma, J. Bayer, Y. Li, A. Dengel, *A Public Ground-Truth Dataset for Handwritten Circuit Diagram Images*, ICDAR 2021 (CGHD, CC BY 3.0). One annotation file is included as a test fixture, with attribution in `tests/data/cghd_real/README.md`.
