@@ -81,3 +81,12 @@ def test_value_attachment_unit_check_and_one_to_one():
               Detection("text", (100, 125, 160, 140), text="4k7")]
     netlist.attach_values([r, cap], labels)
     assert (r.value, cap.value) == ("4.7k", "10u")
+
+
+def test_filled_junction_dot_is_ink():
+    """Regression: a filled dot wider than the paper-estimation window came out hollow,
+    disconnecting every wire that met at the junction."""
+    img = np.full((1260, 1500, 3), 238, np.uint8)
+    cv2.circle(img, (750, 630), 18, (35, 35, 35), -1)
+    mask = preprocess.binarize(img)
+    assert mask[630, 750] == 255

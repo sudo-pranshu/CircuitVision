@@ -33,10 +33,10 @@ def trace(img, dets: list[Detection]) -> dict[int, list[int]]:
     return topology.extract_nets(mask, dets)[0]
 
 
-def run(img, dets: list[Detection]):
+def run(img, dets: list[Detection], info: dict | None = None):
     mask = preprocess.remove_small_blobs(preprocess.binarize(img))
     nets, labels = topology.extract_nets(mask, dets)
-    comps = netlist.build(dets, nets)
+    comps = netlist.build(dets, nets, info)
     netlist.attach_values(comps, dets)
     return comps, labels
 
@@ -81,11 +81,12 @@ def main():
         from .orientation import OrientationModel
         OrientationModel.load(a.orient).annotate(img, dets)
 
-    comps, labels = run(img, dets)
+    info = {}
+    comps, labels = run(img, dets, info)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     stem = Path(a.image).stem
-    spice = netlist.to_spice(comps, title=stem)
+    spice = netlist.to_spice(comps, title=stem, notes=[f"ground: {info['ground']}"])
     (out / f"{stem}.cir").write_text(spice)
     cv2.imwrite(str(out / f"{stem}_overlay.png"), overlay(img, comps, labels))
     print(spice)

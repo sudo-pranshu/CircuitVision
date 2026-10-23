@@ -24,7 +24,8 @@ def binarize(img: np.ndarray, kernel: int | None = None, min_contrast: int = 12)
     """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    k = kernel or max(15, (min(gray.shape[:2]) // 60) | 1)
+    # larger than any solid ink blob (junction dots, filled symbols), still local for shadows
+    k = kernel or max(15, (min(gray.shape[:2]) // 15) | 1)
     paper = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (k, k)))
     dark = (255.0 * cv2.subtract(paper, gray) / np.maximum(paper, 1)).astype(np.uint8)
     cand = dark[dark > min_contrast]

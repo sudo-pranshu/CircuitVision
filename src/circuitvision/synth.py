@@ -30,6 +30,7 @@ class Part:
     vertical: bool = False
     nets: tuple[int, int] = (0, 0)       # GT net of (left/top, right/bottom) terminal
     size: tuple[int, int] = (60, 24)     # long side, short side (unscaled)
+    value: str | None = None             # value label drawn next to the symbol
 
 
 @dataclass
@@ -156,14 +157,24 @@ def render(c: Circuit, scale: float = 1.0, stroke: int = 3, grid: bool = False, 
             cv2.circle(img, p, max(1, int(1.2 * scale)), (238, 238, 238), -1)
     for x, y in c.junctions:
         cv2.circle(img, (int(x * scale), int(y * scale)), int(t * 1.8), INK, -1)
-    dets = []
+    dets, texts = [], []
     for p in c.parts:
         _draw_symbol(img, p, scale, t)
         dets.append(Detection(p.cls, _box(p, scale)))
+        if p.value:
+            x1, y1, x2, y2 = _box(p, scale)
+            fs, th = 0.6 * scale, max(1, int(1.5 * scale))
+            (tw, tht), base = cv2.getTextSize(p.value, cv2.FONT_HERSHEY_SIMPLEX, fs, th)
+            gap = int(6 * scale)
+            org = (x2 + gap, (y1 + y2 + tht) // 2) if p.vertical else ((x1 + x2 - tw) // 2, y1 - gap)
+            cv2.putText(img, p.value, org, cv2.FONT_HERSHEY_SIMPLEX, fs, INK, th, cv2.LINE_AA)
+            texts.append(Detection("text", (org[0] - 2, org[1] - tht - 2, org[0] + tw + 2, org[1] + base + 2),
+                                   text=p.value))
     for x, y in c.crossovers:
         r = int(10 * scale)
         dets.append(Detection("crossover", (int(x * scale) - r, int(y * scale) - r,
                                             int(x * scale) + r, int(y * scale) + r)))
+    dets += texts
     if box_jitter:
         jittered = []
         for d in dets:
@@ -243,8 +254,8 @@ def crossover():
         Part("resistor", (240, 340), True, (4, 3)),
     ], wires=[[(120, 200), (360, 200)], [(240, 90), (240, 310)],
               [(60, 200), (30, 200), (30, 400), (470, 400), (470, 200), (420, 200)],
-              [(240, 30), (240, 15), (490, 15), (490, 420), (240, 420), (240, 370)]],
-        crossovers=[(240, 200), (240, 400)], canvas=(520, 440))
+              [(240, 30), (240, 15), (505, 15), (505, 435), (240, 435), (240, 370)]],
+        crossovers=[(240, 200), (240, 400)], canvas=(530, 455))   # loops >= 35 apart: wobble must not join them
 
 
 def series_rlc():
@@ -309,6 +320,68 @@ def benchmark(extract, seeds=(0, 1, 2)) -> dict:
     return out
 
 
+VALUES = {"resistor": ["1k", "4k7", "10k", "220", "2R2"], "capacitor": ["10uF", "100n", "4,7uF"],
+          "inductor": ["1mH", "10mH"], "voltage_source": ["5V", "12V", "9V"]}
+CGHD_LABEL = {"resistor": "resistor", "capacitor": "capacitor.unpolarized", "inductor": "inductor",
+              "voltage_source": "voltage.dc", "diode": "diode", "gnd": "gnd", "crossover": "crossover",
+              "text": "text"}
+
+
+def reference_netlist(c: Circuit) -> str:
+    """Ground-truth SPICE netlist of a synthetic circuit (net 0 = ground)."""
+    from .classes import SPICE
+    from .netlist import parse_value
+    lines, count, diode = [f"* {c.name} (reference)"], {}, False
+    for p in c.parts:
+        if p.cls not in SPICE:
+            continue
+        pre = SPICE[p.cls][0]
+        count[pre] = count.get(pre, 0) + 1
+        val = parse_value(p.value)[0] if p.value else SPICE[p.cls][1]
+        lines.append(f"{pre}{count[pre]} {p.nets[0]} {p.nets[1]} {val}")
+        diode |= p.cls == "diode"
+    return "\n".join(lines + ([".model DMOD D"] if diode else []) + [".op", ".end"]) + "\n"
+
+
+def write_cghd_like(root: Path, drafters=range(1, 13), per_drafter: int = 6, seed: int = 0) -> Path:
+    """A CGHD-shaped tree (drafter_k/images, annotations with <rotation> inside
+    <bndbox>) of synthetic photos with known graphs, plus references/*.cir."""
+    rng = np.random.default_rng(seed)
+    conds = [k for k in CONDITIONS if not k.startswith("box_jitter")]
+    for d in drafters:
+        for sub in ("images", "annotations", "references"):
+            (root / f"drafter_{d}" / sub).mkdir(parents=True, exist_ok=True)
+        for k in range(per_drafter):
+            make = CIRCUITS[(d + k) % len(CIRCUITS)]
+            c = make()
+            for p in c.parts:
+                if p.cls in VALUES:
+                    p.value = str(rng.choice(VALUES[p.cls]))
+            kw = dict(CONDITIONS[conds[(d * 7 + k) % len(conds)]])
+            kw["scale"] = min(kw.get("scale", 1.0), 3.0)
+            img, dets = render(c, seed=int(rng.integers(1e6)), **kw)
+            stem = f"C{d * 100 + k}_D1_P1"
+            cv2.imwrite(str(root / f"drafter_{d}" / "images" / f"{stem}.jpg"), img)
+            (root / f"drafter_{d}" / "references" / f"{stem}.cir").write_text(reference_netlist(c))
+            objs = []
+            for i, det in enumerate(dets):
+                x1, y1, x2, y2 = det.box
+                rot = ""
+                if i < len(c.parts) and c.parts[i].cls in ("diode", "voltage_source", "resistor"):
+                    # first terminal (left/top) is +: in the CCW convention with + on the
+                    # left at 0 degrees, + on top is 270 (synthetic data only)
+                    base = 270 if c.parts[i].vertical else 0
+                    rot = f"<rotation>{(base + int(rng.integers(-4, 5))) % 360}</rotation>"
+                txt = f"<text>{det.text}</text>" if det.text else ""
+                objs.append(f"<object><name>{CGHD_LABEL[det.cls]}</name><bndbox><xmin>{x1}</xmin>"
+                            f"<ymin>{y1}</ymin><xmax>{x2}</xmax><ymax>{y2}</ymax>{rot}</bndbox>{txt}</object>")
+            h, w = img.shape[:2]
+            (root / f"drafter_{d}" / "annotations" / f"{stem}.xml").write_text(
+                f"<annotation><filename>{stem}.jpg</filename><size><width>{w}</width><height>{h}</height>"
+                f"<depth>3</depth></size>{''.join(objs)}</annotation>")
+    return root
+
+
 def _default_extract(img, dets):
     from .pipeline import trace
     return trace(img, dets)
@@ -317,7 +390,12 @@ def _default_extract(img, dets):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--write-cghd", type=Path, help="write a CGHD-shaped synthetic tree here and exit")
     a = ap.parse_args()
+    if a.write_cghd:
+        write_cghd_like(a.write_cghd)
+        print(f"synthetic CGHD-like tree -> {a.write_cghd}")
+        return
     res = benchmark(_default_extract)
     names = [m().name for m in CIRCUITS]
     print(f"{'condition':<18}" + "".join(f"{n[:12]:>14}" for n in names) + f"{'mean':>8}")

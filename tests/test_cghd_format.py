@@ -124,3 +124,15 @@ def test_out_of_scope_symbol_does_not_short_wires():
     nets, _ = topology.extract_nets(preprocess.binarize(img), dets)
     assert nets[0][-1] != nets[1][0]                      # lamp ink must not merge the two wires
     assert [c.ref for c in netlist.build(dets, nets)] == ["R1", "R2"]
+
+
+def test_implicit_ground_rules():
+    from circuitvision import netlist as nl
+    dets = [Detection("voltage_source", (0, 0, 10, 10)), Detection("resistor", (20, 0, 30, 10))]
+    info = {}
+    comps = nl.build(dets, {0: [3, 7], 1: [3, 7]}, info)
+    assert info["ground"].startswith("implicit: first source") and comps[0].nets == [3, 0]
+    info = {}
+    nl.build([Detection("resistor", (0, 0, 1, 1)), Detection("resistor", (0, 0, 1, 1))],
+             {0: [1, 2], 1: [2, 3]}, info)
+    assert info["ground"] == "implicit: most connected net"

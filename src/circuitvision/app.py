@@ -30,8 +30,9 @@ def build_ui(weights: str, use_ocr: bool = True, orient: str | None = None):
             read_values(img, dets)
         if orienter:
             orienter.annotate(img, dets)
-        comps, labels = run(img, dets)
-        spice = netlist.to_spice(comps)
+        info = {}
+        comps, labels = run(img, dets, info)
+        spice = netlist.to_spice(comps, notes=[f"ground: {info['ground']}"])
         errors = grammar.validate(spice)
         report = ["Validation: " + ("OK" if not errors else "; ".join(errors))]
         if not errors and simulate.available():

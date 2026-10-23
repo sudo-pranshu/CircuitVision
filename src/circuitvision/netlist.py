@@ -1,5 +1,6 @@
 """Nets + detections -> SPICE netlist text."""
 import re
+from collections import Counter
 
 from .classes import SPICE
 from .types import Component, Detection
@@ -71,9 +72,26 @@ def attach_values(comps: list[Component], dets: list[Detection], max_dist=None):
         used_l.add(li)
 
 
-def build(dets: list[Detection], nets: dict[int, list[int]]):
+def build(dets: list[Detection], nets: dict[int, list[int]], info: dict | None = None):
+    """Elements with SPICE refs. Nets touching a ground symbol become node 0.
+
+    Many hand drawings have no ground symbol. Then ground is implicit: the second
+    (negative, when polarity is known) terminal of the first voltage source, or
+    failing that the most connected net. `info["ground"]` records which rule applied.
+    """
+    info = info if info is not None else {}
     gnd_nets = {n for i, d in enumerate(dets) if d.cls == "gnd"
                 for n in nets.get(i, [])}
+    info["ground"] = "symbol" if gnd_nets else "none"
+    if not gnd_nets:
+        srcs = [nets.get(i, []) for i, d in enumerate(dets) if d.cls == "voltage_source"]
+        srcs = [n for n in srcs if len(n) == 2]
+        if srcs:
+            gnd_nets, info["ground"] = {srcs[0][1]}, "implicit: first source, second terminal"
+        else:
+            deg = Counter(n for i, d in enumerate(dets) if d.cls in SPICE for n in nets.get(i, []))
+            if deg:
+                gnd_nets, info["ground"] = {deg.most_common(1)[0][0]}, "implicit: most connected net"
     counters, comps = {}, []
     for i, d in enumerate(dets):
         if d.cls not in SPICE:
@@ -85,8 +103,8 @@ def build(dets: list[Detection], nets: dict[int, list[int]]):
     return comps
 
 
-def to_spice(comps: list[Component], title="CircuitVision netlist") -> str:
-    lines, warnings = [f"* {title}"], []
+def to_spice(comps: list[Component], title="CircuitVision netlist", notes=()) -> str:
+    lines, warnings = [f"* {title}"] + [f"* {n}" for n in notes], []
     needs_dmod = False
     for c in comps:
         if len(c.nets) != 2:
