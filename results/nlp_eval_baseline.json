@@ -1,0 +1,426 @@
+{
+ "label": "handwritten evaluation set (independent of synthetic training data)",
+ "sentences": 30,
+ "tagging": {
+  "token_accuracy": 0.9856,
+  "macro_f1": 0.9751,
+  "per_tag": {
+   "SRC": {
+    "precision": 0.864,
+    "recall": 1.0,
+    "f1": 0.927
+   },
+   "RES": {
+    "precision": 1.0,
+    "recall": 0.929,
+    "f1": 0.963
+   },
+   "CAP": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "IND": {
+    "precision": 1.0,
+    "recall": 0.75,
+    "f1": 0.857
+   },
+   "DIO": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "VAL": {
+    "precision": 1.0,
+    "recall": 0.975,
+    "f1": 0.987
+   },
+   "UNIT": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "SER": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "PAR": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "SEP": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "O": {
+    "precision": 0.984,
+    "recall": 1.0,
+    "f1": 0.992
+   }
+  }
+ },
+ "circuit_exact_match": 0.8,
+ "component": {
+  "precision": 0.9651,
+  "recall": 0.9651,
+  "f1": 0.9651
+ },
+ "netlist_valid": 1.0,
+ "error_types": {
+  "tokenization": 3,
+  "structure": 2,
+  "tagging": 1
+ },
+ "sentences_detail": [
+  {
+   "id": 1,
+   "text": "a 9V battery connected to a 470 ohm resistor",
+   "gold_tree": "resistor:470",
+   "gold_source": "DC 9",
+   "tag_errors": [],
+   "tree": "resistor:470",
+   "source": "DC 9",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 2,
+   "text": "a 12 volt supply driving a 1k resistor in series with a 2.2k resistor",
+   "gold_tree": "S(resistor:1k,resistor:2.2k)",
+   "gold_source": "DC 12",
+   "tag_errors": [],
+   "tree": "S(resistor:1k,resistor:2.2k)",
+   "source": "DC 12",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 3,
+   "text": "a 5V source powering a 330Ω resistor followed by a green LED",
+   "gold_tree": "S(resistor:330,diode:-)",
+   "gold_source": "DC 5",
+   "tag_errors": [],
+   "tree": "S(resistor:330,diode:-)",
+   "source": "DC 5",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 4,
+   "text": "a 10k resistor in parallel with a 4.7k resistor across a 3.3V supply",
+   "gold_tree": "P(resistor:10k,resistor:4.7k)",
+   "gold_source": "DC 3.3",
+   "tag_errors": [],
+   "tree": "P(resistor:10k,resistor:4.7k)",
+   "source": "DC 3.3",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 5,
+   "text": "a 100nF capacitor in parallel with a 1mH inductor",
+   "gold_tree": "P(capacitor:100n,inductor:1m)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "P(capacitor:100n,inductor:1m)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 6,
+   "text": "a 24V supply feeding a 47 ohm resistor in series with a 10uF capacitor",
+   "gold_tree": "S(resistor:47,capacitor:10u)",
+   "gold_source": "DC 24",
+   "tag_errors": [],
+   "tree": "S(resistor:47,capacitor:10u)",
+   "source": "DC 24",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 7,
+   "text": "a 1k resistor, a 2k resistor and a 3k resistor in series powered by a 6V battery",
+   "gold_tree": "S(resistor:1k,resistor:2k,resistor:3k)",
+   "gold_source": "DC 6",
+   "tag_errors": [],
+   "tree": "S(resistor:1k,resistor:2k,resistor:3k)",
+   "source": "DC 6",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 8,
+   "text": "three resistors of 100, 200 and 300 ohms in parallel",
+   "gold_tree": "P(resistor:100,resistor:200,resistor:300)",
+   "gold_source": null,
+   "tag_errors": [
+    "resistors:RES->O"
+   ],
+   "tree": "P(resistor:100,resistor:200,resistor:300)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 9,
+   "text": "a 4k7 resistor in series with a 2R2 resistor driven by a 9 V cell",
+   "gold_tree": "S(resistor:4.7k,resistor:2.2)",
+   "gold_source": "DC 9",
+   "tag_errors": [
+    "4k7:VAL->O",
+    "2R2:VAL->O"
+   ],
+   "tree": "S(resistor:4k,resistor:2)",
+   "source": "DC 9",
+   "netlist_valid": true,
+   "exact": false,
+   "error_type": "tokenization"
+  },
+  {
+   "id": 10,
+   "text": "a 15V supply connected across a 1k resistor in parallel with a 22nF capacitor",
+   "gold_tree": "P(capacitor:22n,resistor:1k)",
+   "gold_source": "DC 15",
+   "tag_errors": [],
+   "tree": "P(capacitor:22n,resistor:1k)",
+   "source": "DC 15",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 11,
+   "text": "a 220 ohm resistor in series with a diode across a 5V source",
+   "gold_tree": "S(resistor:220,diode:-)",
+   "gold_source": "DC 5",
+   "tag_errors": [],
+   "tree": "S(resistor:220,diode:-)",
+   "source": "DC 5",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 12,
+   "text": "a 2.2mH coil in series with a 68 ohm resistor",
+   "gold_tree": "S(inductor:2.2m,resistor:68)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "S(inductor:2.2m,resistor:68)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 13,
+   "text": "an LED in series with a 1k res powered by a 9V battery",
+   "gold_tree": "S(diode:-,resistor:1k)",
+   "gold_source": "DC 9",
+   "tag_errors": [
+    "res:RES->SRC"
+   ],
+   "tree": "S(diode:-,resistor:1k)",
+   "source": "DC 9",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 14,
+   "text": "a 10uF cap in parallel with a 100k resistor",
+   "gold_tree": "P(capacitor:10u,resistor:100k)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "P(capacitor:10u,resistor:100k)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 15,
+   "text": "a 3.3k resistor and a 6.8k resistor in parallel, in series with a 1k resistor",
+   "gold_tree": "S(P(resistor:3.3k,resistor:6.8k),resistor:1k)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "S(resistor:3.3k,resistor:6.8k,resistor:1k)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": false,
+   "error_type": "structure"
+  },
+  {
+   "id": 16,
+   "text": "a 1k resistor in series with a 2k resistor, all in parallel with a 3k resistor",
+   "gold_tree": "P(S(resistor:1k,resistor:2k),resistor:3k)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "S(resistor:1k,P(resistor:2k,resistor:3k))",
+   "source": null,
+   "netlist_valid": true,
+   "exact": false,
+   "error_type": "structure"
+  },
+  {
+   "id": 17,
+   "text": "a 12V battery driving a 100 ohm resistor in series with a 470uF capacitor which is in parallel with a 1k resistor",
+   "gold_tree": "S(resistor:100,P(capacitor:470u,resistor:1k))",
+   "gold_source": "DC 12",
+   "tag_errors": [],
+   "tree": "S(resistor:100,P(capacitor:470u,resistor:1k))",
+   "source": "DC 12",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 18,
+   "text": "a 47k resistor in parallel with a 100nF capacitor which is in series with a 10mH inductor",
+   "gold_tree": "P(S(capacitor:100n,inductor:10m),resistor:47k)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "P(S(capacitor:100n,inductor:10m),resistor:47k)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 19,
+   "text": "a 1 kΩ resistor in series with a 4.7 µF capacitor connected to a 5 V supply",
+   "gold_tree": "S(resistor:1k,capacitor:4.7u)",
+   "gold_source": "DC 5",
+   "tag_errors": [],
+   "tree": "S(resistor:1k,capacitor:4.7u)",
+   "source": "DC 5",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 20,
+   "text": "a 560 ohm resistor followed by a red LED followed by a 1N4148 diode powered by a 12V battery",
+   "gold_tree": "S(resistor:560,diode:-,diode:-)",
+   "gold_source": "DC 12",
+   "tag_errors": [],
+   "tree": "S(resistor:560,diode:-,resistor:1n,diode:-)",
+   "source": "DC 12",
+   "netlist_valid": true,
+   "exact": false,
+   "error_type": "tokenization"
+  },
+  {
+   "id": 21,
+   "text": "two 1k resistors in series across a 5V supply",
+   "gold_tree": "S(resistor:1k,resistor:1k)",
+   "gold_source": "DC 5",
+   "tag_errors": [
+    "resistors:RES->SRC"
+   ],
+   "tree": "resistor:1k",
+   "source": "DC 5",
+   "netlist_valid": true,
+   "exact": false,
+   "error_type": "tagging"
+  },
+  {
+   "id": 22,
+   "text": "a 1k and a 2k resistor in parallel",
+   "gold_tree": "P(resistor:1k,resistor:2k)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "P(resistor:1k,resistor:2k)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 23,
+   "text": "a voltage source of 10V connected to a resistor of 2.2k",
+   "gold_tree": "resistor:2.2k",
+   "gold_source": "DC 10",
+   "tag_errors": [],
+   "tree": "resistor:2.2k",
+   "source": "DC 10",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 24,
+   "text": "a 100 ohm resistor in series with (a 200 ohm resistor in parallel with a 300 ohm resistor)",
+   "gold_tree": "S(resistor:100,P(resistor:200,resistor:300))",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "S(resistor:100,P(resistor:200,resistor:300))",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 25,
+   "text": "(a 1k resistor in series with a 1k resistor) in parallel with a 500 ohm resistor",
+   "gold_tree": "P(S(resistor:1k,resistor:1k),resistor:500)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "S(resistor:1k,P(resistor:1k,resistor:500))",
+   "source": null,
+   "netlist_valid": true,
+   "exact": false,
+   "error_type": "tokenization"
+  },
+  {
+   "id": 26,
+   "text": "a 6 volt cell feeding a 50 ohm resistance in series with a 25 mH choke",
+   "gold_tree": "S(resistor:50,inductor:25m)",
+   "gold_source": "DC 6",
+   "tag_errors": [
+    "choke:IND->SRC"
+   ],
+   "tree": "S(resistor:50,inductor:25m)",
+   "source": "DC 6",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 27,
+   "text": "a 1M resistor in series with a 1uF capacitor driven by a 9V battery",
+   "gold_tree": "S(resistor:1meg,capacitor:1u)",
+   "gold_source": "DC 9",
+   "tag_errors": [],
+   "tree": "S(resistor:1meg,capacitor:1u)",
+   "source": "DC 9",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 28,
+   "text": "a 33nF capacitor, a 47nF capacitor and a 68nF capacitor in parallel",
+   "gold_tree": "P(capacitor:33n,capacitor:47n,capacitor:68n)",
+   "gold_source": null,
+   "tag_errors": [],
+   "tree": "P(capacitor:33n,capacitor:47n,capacitor:68n)",
+   "source": null,
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 29,
+   "text": "a 2.5V supply powering a 10 ohm resistor",
+   "gold_tree": "resistor:10",
+   "gold_source": "DC 2.5",
+   "tag_errors": [],
+   "tree": "resistor:10",
+   "source": "DC 2.5",
+   "netlist_valid": true,
+   "exact": true
+  },
+  {
+   "id": 30,
+   "text": "a 4.7k resistor and a 10nF capacitor in series, connected across a 3.3V source",
+   "gold_tree": "S(resistor:4.7k,capacitor:10n)",
+   "gold_source": "DC 3.3",
+   "tag_errors": [],
+   "tree": "S(resistor:4.7k,capacitor:10n)",
+   "source": "DC 3.3",
+   "netlist_valid": true,
+   "exact": true
+  }
+ ]
+}
