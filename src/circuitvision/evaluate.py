@@ -28,7 +28,7 @@ from pathlib import Path
 import numpy as np
 
 from . import grammar, netlist, preprocess, simulate
-from .cghd_to_yolo import find_image
+from .cghd_to_yolo import find_image, load_for_annotation, parse_voc
 from .detector_eval import iou_matrix
 from . import orientation as orient_mod
 from .orientation import POLARIZED
@@ -63,7 +63,7 @@ def netlist_stages(img, dets, sim: bool):
 
 def orientation_stage(model, img, gt_dets, pred_dets=None):
     """-> (correct, total) for polarized parts with a GT rotation."""
-    gt = [d for d in gt_dets if d.cls in POLARIZED and d.rotation is not None]
+    gt = [d for d in gt_dets if d.cls in POLARIZED and d.rotation is not None and not d.mirror]
     if not gt:
         return 0, 0
     if pred_dets is None:                              # GT boxes: predict on each GT box
@@ -117,7 +117,11 @@ def main():
         img_path = find_image(xml.parent.parent / "images", xml.stem)
         if img_path is None:
             continue
-        img = preprocess.load(str(img_path))
+        xw, xh, _ = parse_voc(xml)
+        img, frame = load_for_annotation(img_path, xw, xh)
+        if img is None:
+            stage["unreadable_images"] += 1
+            continue
         gt = detections_from_xml(xml)
 
         row = {"image": f"{xml.parent.parent.name}/{img_path.name}"}

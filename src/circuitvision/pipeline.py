@@ -14,14 +14,17 @@ import numpy as np
 
 from . import grammar, netlist, preprocess, simulate, topology
 from .cghd_to_yolo import parse_voc
-from .orientation import from_cghd
+from .orientation import from_cghd, is_mirrored
 from .types import Detection
 
 
 def detections_from_xml(xml_path) -> list[Detection]:
-    _, _, objs = parse_voc(Path(xml_path))
-    return [Detection(cls, tuple(int(v) for v in (x1, y1, x2, y2)), 1.0, text, from_cghd(rot))
-            for cls, x1, y1, x2, y2, text, rot in objs]
+    """Ground-truth boxes. Out-of-scope symbols come back as class OTHER so their
+    ink is masked during wire tracing instead of shorting wires together."""
+    _, _, objs = parse_voc(Path(xml_path), keep_other=True)
+    return [Detection(o.cls, tuple(int(v) for v in (o.x1, o.y1, o.x2, o.y2)), 1.0, o.text,
+                      from_cghd(o.rotation), mirror=is_mirrored(o.mirror))
+            for o in objs]
 
 
 def run(img, dets: list[Detection]):

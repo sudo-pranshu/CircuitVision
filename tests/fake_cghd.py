@@ -6,11 +6,12 @@ import numpy as np
 
 
 def _obj(name, box, rotation=None, text=None):
-    extra = (f"<rotation>{rotation}</rotation>" if rotation is not None else "") + \
-            (f"<text>{text}</text>" if text is not None else "")
+    """VOC object in the real CGHD layout: <rotation> nested inside <bndbox>."""
+    rot = f"<rotation>{rotation}</rotation>" if rotation is not None else ""
+    txt = f"<text>{text}</text>" if text is not None else ""
     x1, y1, x2, y2 = box
-    return (f"<object><name>{name}</name>{extra}<bndbox><xmin>{x1}</xmin><ymin>{y1}</ymin>"
-            f"<xmax>{x2}</xmax><ymax>{y2}</ymax></bndbox></object>")
+    return (f"<object><name>{name}</name><bndbox><xmin>{x1}</xmin><ymin>{y1}</ymin>"
+            f"<xmax>{x2}</xmax><ymax>{y2}</ymax>{rot}</bndbox>{txt}</object>")
 
 
 def make(root: Path, w=200, h=100) -> Path:
@@ -22,7 +23,7 @@ def make(root: Path, w=200, h=100) -> Path:
             cv2.imwrite(str(root / d / "images" / f"{stem}.jpg"), np.full((h, w, 3), 255, np.uint8))
             objs = [
                 _obj("resistor", (10, 10, 50, 30)),
-                _obj("diode", (60, 10, 90, 30), rotation=90),
+                _obj("diode", (60, 10, 90, 30), rotation=91),
                 _obj("voltage.dc", (100, 10, 130, 40), rotation=0),
                 _obj("text", (10, 40, 40, 55), text="10k"),
                 _obj("transistor.bjt", (140, 10, 170, 40)),      # out of scope

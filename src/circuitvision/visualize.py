@@ -18,7 +18,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .cghd_to_yolo import find_image, parse_voc
+from .cghd_to_yolo import find_image, load_for_annotation, parse_voc
 from .classes import CLASSES
 
 COLORS = [(0, 0, 255), (0, 160, 0), (255, 0, 0), (0, 140, 255), (160, 0, 160),
@@ -94,20 +94,28 @@ def _tile(crop, size=96, pad_color=255):
 def rotation(cghd: Path, out: Path, per_group=8, prefixes=("diode", "voltage"), seed=0):
     """One sheet per raw label: a row per rotation value, crops with context."""
     rng = random.Random(seed)
-    groups = defaultdict(list)                       # (label, rot) -> [(img_path, box)]
+    groups = defaultdict(list)            # (label, rotation bin) -> [(xml, box, raw value, mirror)]
     for xml in sorted(cghd.glob("drafter_*/annotations/*.xml")):
-        for name, x1, y1, x2, y2, _, rot in parse_voc(xml, raw=True)[2]:
-            if name.lower().startswith(prefixes):
-                groups[(name, (rot or "none").strip())].append((xml, (x1, y1, x2, y2)))
+        w, h, objs = parse_voc(xml, raw=True)
+        for o in objs:
+            if o.cls.lower().startswith(prefixes):
+                try:                                  # CGHD rotation has 1-degree resolution
+                    b = str(int(round(float(o.rotation) / 90) * 90) % 360)
+                except (TypeError, ValueError):
+                    b = "none"
+                if o.mirror is not None:
+                    b += f" mirror={o.mirror}"
+                groups[(o.cls, b)].append((xml, (o.x1, o.y1, o.x2, o.y2), w, h))
     out.mkdir(parents=True, exist_ok=True)
     labels_seen = sorted({k[0] for k in groups})
     for label in labels_seen:
         rows = []
-        for rot in sorted({k[1] for k in groups if k[0] == label}, key=lambda r: (r == "none", r)):
+        for rot in sorted({k[1] for k in groups if k[0] == label},
+                          key=lambda r: (r.startswith("none"), int(r.split()[0]) if r[0].isdigit() else 0, r)):
             items = groups[(label, rot)]
             tiles = []
-            for xml, (x1, y1, x2, y2) in rng.sample(items, min(per_group, len(items))):
-                img = cv2.imread(str(find_image(xml.parent.parent / "images", xml.stem)))
+            for xml, (x1, y1, x2, y2), w, h in rng.sample(items, min(per_group, len(items))):
+                img, _ = load_for_annotation(find_image(xml.parent.parent / "images", xml.stem), w, h)
                 if img is None:
                     continue
                 m = int(0.25 * max(x2 - x1, y2 - y1))       # context so wires show
@@ -116,7 +124,9 @@ def rotation(cghd: Path, out: Path, per_group=8, prefixes=("diode", "voltage"), 
                     tiles.append(_tile(crop))
             tiles += [np.full((96, 96, 3), 255, np.uint8)] * (per_group - len(tiles))
             head = np.full((96, 150, 3), 255, np.uint8)
-            cv2.putText(head, f"rot={rot}", (6, 44), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1)
+            cv2.putText(head, f"rot~{rot.split()[0]}", (6, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1)
+            if " " in rot:
+                cv2.putText(head, rot.split(" ", 1)[1], (6, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 200), 1)
             cv2.putText(head, f"n={len(items)}", (6, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (90, 90, 90), 1)
             rows.append(np.hstack([head] + tiles))
         sheet = np.vstack(rows)

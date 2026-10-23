@@ -24,7 +24,7 @@ from pathlib import Path
 import cv2
 from PIL import Image
 
-from .cghd_to_yolo import IMG_EXT, find_image, split_of
+from .cghd_to_yolo import IMG_EXT, MIRROR_TAGS, _field, exif_orientation, find_image, split_of
 from .classes import map_cghd
 
 POLAR_RAW = re.compile(r"^(diode|voltage)", re.I)
@@ -95,7 +95,12 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
          "mapped_by_split": defaultdict(Counter), "boxes": Counter(),
          "size_check": Counter(), "rotation": defaultdict(Counter),
          "rotation_present": Counter(), "text_present": Counter(),
-         "text_examples": defaultdict(list), "object_fields": Counter(), "image_dims": Counter()}
+         "text_examples": defaultdict(list), "object_fields": Counter(), "image_dims": Counter(),
+         "bndbox_fields": Counter(), "mirror": defaultdict(Counter),
+         "rotation_bin": defaultdict(Counter), "rotation_offset": Counter(),
+         "rotation_aspect": defaultdict(lambda: defaultdict(Counter)),
+         "exif_orientation": Counter(), "drafter_subfolders": Counter(),
+         "file_types": Counter(), "circuits": Counter()}
     samples, sample_files = [], set()
 
     sizes = {}
@@ -110,6 +115,8 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
 
     for d in drafters:
         split = split_of(d.name, val, test)
+        r["drafter_subfolders"].update(p.name for p in d.iterdir() if p.is_dir())
+        r["file_types"].update(f"{p.parent.name}/*{p.suffix.lower()}" for p in d.rglob("*") if p.is_file())
         xmls = sorted((d / "annotations").glob("*.xml"))
         imgs = [p for p in (d / "images").glob("*") if p.suffix.lower() in IMG_EXT]
         img_stems = {p.stem for p in imgs}
@@ -128,8 +135,13 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
                 continue
             w = int(float(root.findtext("size/width") or 0))
             h = int(float(root.findtext("size/height") or 0))
+            m = re.match(r"(C-?\d+)_", xml.stem)
+            if m:
+                r["circuits"][m.group(1)] += 1
             if read_images:
-                raw, shown = sizes[str(find_image(d / "images", xml.stem))]
+                img_path = find_image(d / "images", xml.stem)
+                r["exif_orientation"][str(exif_orientation(img_path))] += 1
+                raw, shown = sizes[str(img_path)]
                 if raw is None:
                     r["size_check"]["unreadable_image"] += 1
                 else:
@@ -142,6 +154,8 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
                 name = o.findtext("name", "")
                 r["raw_classes"][name] += 1
                 r["object_fields"].update(c.tag for c in o)
+                if o.find("bndbox") is not None:
+                    r["bndbox_fields"].update(c.tag for c in o.find("bndbox"))
                 mapped = map_cghd(name)
                 if mapped:
                     r["mapped_by_split"][split][mapped] += 1
@@ -156,10 +170,27 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
                     r["boxes"]["inverted_or_empty"] += 1
                 if x1 < 0 or y1 < 0 or (w and x2 > w) or (h and y2 > h):
                     r["boxes"]["out_of_bounds"] += 1
-                rot, text = o.findtext("rotation"), o.findtext("text")
+                # CGHD nests <rotation> (and mirror) inside <bndbox>; accept either level
+                rot, text = _field(o, "rotation"), o.findtext("text")
+                mir = next((_field(o, t) for t in MIRROR_TAGS if _field(o, t) is not None), None)
+                if mir is not None:
+                    r["mirror"][name][mir.strip()] += 1
                 if rot is not None:
                     r["rotation_present"][name] += 1
                     r["rotation"][name][rot.strip()] += 1
+                    try:
+                        deg = float(rot) % 360
+                        b = int(round(deg / 90) * 90) % 360
+                        off = (deg - b + 180) % 360 - 180
+                        r["rotation_bin"][name][str(b)] += 1
+                        r["rotation_offset"][("<=5" if abs(off) <= 5 else "<=15" if abs(off) <= 15
+                                              else ">15")] += 1
+                        # evidence for what 0 degrees means: is the box wider than tall?
+                        shape = "wide" if (x2 - x1) > 1.2 * (y2 - y1) else \
+                                "tall" if (y2 - y1) > 1.2 * (x2 - x1) else "square"
+                        r["rotation_aspect"][name][str(b)][shape] += 1
+                    except ValueError:
+                        r["rotation_offset"]["unparsable"] += 1
                 if text is not None:
                     r["text_present"][name] += 1
                     if len(r["text_examples"][name]) < 8:
@@ -176,6 +207,24 @@ def audit(cghd: Path, val: set, test: set, read_images: bool = True, n_samples: 
     return json.loads(json.dumps(r)), samples
 
 
+DOC_SUFFIXES = {".py", ".md", ".txt", ".json", ".yaml", ".yml", ".cfg", ".toml", ".sh"}
+
+
+def copy_dataset_docs(cghd: Path, out: Path, max_bytes: int = 2_000_000) -> list[str]:
+    """Copy the dataset's own scripts/docs (outside drafter_* folders) into the
+    evidence, e.g. its loader, which defines how rotation and mirror are applied."""
+    copied = []
+    for p in sorted(cghd.rglob("*")):
+        rel = p.relative_to(cghd)
+        if (p.is_file() and p.suffix.lower() in DOC_SUFFIXES and p.stat().st_size <= max_bytes
+                and not rel.parts[0].startswith("drafter_") and len(rel.parts) <= 3):
+            dst = out / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(p.read_bytes())
+            copied.append(str(rel))
+    return copied
+
+
 def to_markdown(r: dict) -> str:
     L = [f"# CGHD audit\n\nRoot: `{r['root']}`\n",
          f"- Drafters found ({len(r['drafters'])}): {', '.join(r['drafters'])}",
@@ -185,6 +234,14 @@ def to_markdown(r: dict) -> str:
          f"- Boxes: {r['boxes']}",
          f"- XML size vs image: {r['size_check'] or 'not checked (--no-images)'}",
          f"- Fields seen inside <object>: {r['object_fields']}",
+         f"- Fields seen inside <bndbox>: {r['bndbox_fields']}",
+         f"- Drafter subfolders: {r['drafter_subfolders']}",
+         f"- File types: {r['file_types']}",
+         f"- Distinct circuits: {len(r['circuits'])} (images per circuit: "
+         f"{dict(sorted(Counter(r['circuits'].values()).items()))})",
+         f"- EXIF orientation tags: {r['exif_orientation'] or 'not checked'}",
+         f"- Rotation distance from nearest multiple of 90: {r['rotation_offset']}",
+         f"- Mirror annotations: {({k: dict(v) for k, v in r['mirror'].items()}) or 'none found'}",
          f"- Polarized objects missing <rotation>: {r['polarized_objects_without_rotation'] or 'none'}",
          "\n## Per drafter\n", "| drafter | split | xml | images | paired | xml w/o image | image w/o xml |",
          "|---|---|---|---|---|---|---|"]
@@ -198,8 +255,16 @@ def to_markdown(r: dict) -> str:
                                           for s in ("train", "val", "test")) + " |")
     L += ["\n## All raw CGHD labels\n"]
     L += [f"- {k}: {v}" for k, v in sorted(r["raw_classes"].items(), key=lambda x: -x[1])]
-    L += ["\n## Rotation values (raw label -> value: count)\n"]
-    L += [f"- {k}: {dict(v)}" for k, v in sorted(r["rotation"].items())]
+    L += ["\n## Rotation, binned to the nearest 90 degrees (raw label -> bin: count)\n"]
+    L += [f"- {k}: {dict(sorted(v.items(), key=lambda x: int(x[0])))}" for k, v in sorted(r["rotation_bin"].items())]
+    L += ["\n## What does 0 degrees mean? Box shape per rotation bin (wide / tall / square)\n",
+          "Box shape alone shows whether a bin is horizontal or vertical; it cannot show",
+          "clockwise vs counter-clockwise or the polarity side. Those need the rotation sheets.\n",
+          "| label | bin | wide | tall | square |", "|---|---|---|---|---|"]
+    for k in sorted(r["rotation_aspect"]):
+        for b in sorted(r["rotation_aspect"][k], key=int):
+            c = r["rotation_aspect"][k][b]
+            L.append(f"| {k} | {b} | {c.get('wide', 0)} | {c.get('tall', 0)} | {c.get('square', 0)} |")
     L += ["\n## Text field examples\n"]
     L += [f"- {k} ({r['text_present'][k]} with text): {v}" for k, v in sorted(r["text_examples"].items())]
     L += ["\n## Image dimensions (top 10)\n"]
@@ -224,6 +289,8 @@ def main():
     md = to_markdown(r)
     (a.out / "audit.md").write_text(md)
     (a.out / "raw_xml_samples.txt").write_text("\n\n".join(samples) + "\n")
+    docs = copy_dataset_docs(a.cghd, a.out / "dataset_docs")
+    print(f"dataset scripts/docs copied to {a.out / 'dataset_docs'}: {docs or 'none found'}")
     print(md)
     print(f"raw XML samples: {a.out / 'raw_xml_samples.txt'}")
 

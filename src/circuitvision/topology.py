@@ -11,11 +11,12 @@ from dataclasses import replace
 import cv2
 import numpy as np
 
+from .classes import OTHER
 from .orientation import OPPOSITE, SIDES, positive_side
 from .types import Detection
 
 MASKED = {"resistor", "capacitor", "inductor", "voltage_source", "diode",
-          "gnd", "crossover", "text"}
+          "gnd", "crossover", "text", OTHER}
 
 
 class DSU:

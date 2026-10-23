@@ -8,6 +8,7 @@ class Detection:
     conf: float = 1.0
     text: str | None = None       # for "text" detections (OCR result)
     rotation: int | None = None   # 0/90/180/270, for polarized parts
+    mirror: bool | None = None    # CGHD mirror annotation (None = not annotated)
 
 
 @dataclass

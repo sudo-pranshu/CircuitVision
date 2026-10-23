@@ -19,9 +19,9 @@ def test_parse_voc_reads_rotation_and_text(tmp_path):
     root = make(tmp_path / "cghd")
     _, _, objs = parse_voc(next((root / "drafter_1" / "annotations").glob("C0*.xml")))
     by_cls = {o[0]: o for o in objs}
-    assert by_cls["diode"][6] == "90"
-    assert by_cls["voltage_source"][6] == "0"
-    assert by_cls["text"][5] == "10k"
+    assert by_cls["diode"].rotation == "91"
+    assert by_cls["voltage_source"].rotation == "0"
+    assert by_cls["text"].text == "10k"
     assert "transistor.bjt" not in by_cls
 
 
@@ -48,7 +48,7 @@ def test_audit_report(tmp_path):
     assert r["drafters"] == ["drafter_1", "drafter_11", "drafter_12"]
     assert r["test_drafters_present"] == ["drafter_12"]
     assert r["per_drafter"]["drafter_1"]["xml_without_image"] == 1
-    assert r["rotation"]["diode"] == {"90": 6}
+    assert r["rotation"]["diode"] == {"91": 6} and r["rotation_bin"]["diode"] == {"90": 6}
     assert r["boxes"]["out_of_bounds"] == 6 and r["boxes"]["inverted_or_empty"] == 6
     assert r["size_check"] == {"xml_matches_displayed": 6}
     assert samples and "<rotation>" in samples[0]

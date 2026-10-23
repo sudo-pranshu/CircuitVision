@@ -41,10 +41,20 @@ if PLUS_AT_0 not in SIDES:
 
 
 def from_cghd(rotation) -> int | None:
-    if rotation is None:
+    """CGHD <rotation> (degrees, 1-degree resolution) -> nearest of 0/90/180/270 in
+    CircuitVision's counter-clockwise convention. Unparsable values -> None."""
+    try:
+        r = int(round(float(rotation) / 90) * 90) % 360
+    except (TypeError, ValueError):
         return None
-    r = int(round(float(rotation) / 90) * 90) % 360
     return (-r) % 360 if CGHD_CLOCKWISE else r
+
+
+def is_mirrored(value) -> bool | None:
+    """CGHD mirror annotation -> True/False, or None when not annotated."""
+    if value is None:
+        return None
+    return str(value).strip().lower() in ("1", "true", "yes", "y")
 
 
 def positive_side(cls: str, rotation: int | None) -> str | None:
@@ -125,23 +135,40 @@ def accuracy(model: OrientationModel, cls: str, samples) -> float:
     return sum(model.predict(cls, c) == r for c, r in pairs) / max(1, len(pairs))
 
 
-def collect_cghd(root: Path, drafters: set[str] | None = None, exclude=frozenset()):
-    """-> {cls: [(crop, rotation)]} from CGHD symbols that carry a rotation."""
-    from .cghd_to_yolo import find_image, parse_voc
+def collect_cghd(root: Path, drafters: set[str] | None = None, exclude=frozenset(), skipped=None):
+    """-> {cls: [(crop, rotation)]} from polarized CGHD symbols that carry a rotation.
+
+    Mirrored symbols are skipped (and counted in `skipped`): whether a mirror
+    flips polarity depends on the CGHD symbol template, which is not documented.
+    """
+    from .cghd_to_yolo import find_image, load_for_annotation, parse_voc
+    skipped = skipped if skipped is not None else {}
     data = {c: [] for c in POLARIZED}
     for drafter in sorted(root.glob("drafter_*")):
         if drafter.name in exclude or (drafters and drafter.name not in drafters):
             continue
         for xml in sorted((drafter / "annotations").glob("*.xml")):
-            objs = [o for o in parse_voc(xml)[2] if o[0] in POLARIZED and o[6] is not None]
+            w, h, all_objs = parse_voc(xml)
+            objs = []
+            for o in all_objs:
+                if o.cls not in POLARIZED:
+                    continue
+                if from_cghd(o.rotation) is None:
+                    skipped["no_rotation"] = skipped.get("no_rotation", 0) + 1
+                elif is_mirrored(o.mirror):
+                    skipped["mirrored"] = skipped.get("mirrored", 0) + 1
+                else:
+                    objs.append(o)
             img_path = find_image(drafter / "images", xml.stem)
             if not objs or img_path is None:
                 continue
-            img = cv2.imread(str(img_path))
-            for cls, x1, y1, x2, y2, _, rot in objs:
-                crop = img[int(y1):int(y2), int(x1):int(x2)]
+            img, _ = load_for_annotation(img_path, w, h)
+            if img is None:
+                continue
+            for o in objs:
+                crop = img[int(o.y1):int(o.y2), int(o.x1):int(o.x2)]
                 if crop.size:
-                    data[cls].append((crop, from_cghd(rot)))
+                    data[o.cls].append((crop, from_cghd(o.rotation)))
     return data
 
 
@@ -154,12 +181,15 @@ def main():
     a = ap.parse_args()
 
     test = {f"drafter_{d}" for d in a.test_drafters.split(",")}
-    train_data = collect_cghd(a.cghd, exclude=test)
-    test_data = collect_cghd(a.cghd, drafters=test)
+    skipped_train, skipped_test = {}, {}
+    train_data = collect_cghd(a.cghd, exclude=test, skipped=skipped_train)
+    test_data = collect_cghd(a.cghd, drafters=test, skipped=skipped_test)
+    print("skipped (train):", skipped_train, " skipped (test):", skipped_test)
 
     svms, report = {}, {"convention": {"PLUS_AT_0": PLUS_AT_0, "CGHD_CLOCKWISE": CGHD_CLOCKWISE,
                                         "source": CONVENTION_SOURCE},
-                         "test_drafters": sorted(test), "classes": {}}
+                         "test_drafters": sorted(test), "classes": {},
+                         "skipped_train": skipped_train, "skipped_test": skipped_test}
     for cls, items in train_data.items():
         samples = [s for crop, r in items for s in rotated_samples(crop, r)]
         if len({r for _, r in samples}) < 2:
