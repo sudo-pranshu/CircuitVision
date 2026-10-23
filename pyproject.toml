@@ -5,7 +5,7 @@ requires-python = ">=3.10"
 dependencies = ["opencv-python", "numpy", "pillow"]
 
 [project.optional-dependencies]
-detect = ["ultralytics", "easyocr"]
+detect = ["ultralytics==8.4.184", "easyocr==1.7.2"]   # versions the pipeline was tested with
 app = ["gradio>=5"]
 dev = ["pytest"]
 

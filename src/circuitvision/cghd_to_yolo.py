@@ -145,6 +145,7 @@ def convert(cghd: Path, out: Path, val: set, test: set) -> dict:
     per_split = {s: Counter() for s in ("train", "val", "test")}
     ignored = Counter()
     failures = []
+    reencoded = []                     # images whose EXIF rotation was baked in (Gate 2 checks these)
 
     for drafter in sorted(p for p in cghd.glob("drafter_*") if p.is_dir()):
         split = split_of(drafter.name, val, test)
@@ -188,6 +189,7 @@ def convert(cghd: Path, out: Path, val: set, test: set) -> dict:
                     stats["unreadable_image"] += 1
                     continue
                 cv2.imwrite(str(out / "images" / split / name), pix, [cv2.IMWRITE_JPEG_QUALITY, 95])
+                reencoded.append(f"{split}/{Path(name).stem}")
             (out / "labels" / split / (Path(name).stem + ".txt")).write_text(
                 "\n".join(lines) + ("\n" if lines else ""))
             per_split[split]["images"] += 1
@@ -206,6 +208,7 @@ def convert(cghd: Path, out: Path, val: set, test: set) -> dict:
         "problems": dict(stats),
         "ignored_classes": dict(ignored.most_common()),
         "failures": failures[:200],
+        "exif_reencoded": reencoded,
     }
     (out / "conversion_stats.json").write_text(json.dumps(report, indent=1))
     return report

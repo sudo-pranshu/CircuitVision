@@ -11,6 +11,7 @@ way ultralytics loads them for training. A shifted or rotated box here is a
 shifted or rotated label in training.
 """
 import argparse
+import json
 import random
 from collections import defaultdict
 from pathlib import Path
@@ -45,28 +46,42 @@ def draw_yolo(img, label_lines):
     return out
 
 
-def pick_stratified(label_files, n, seed=0):
-    """Choose n label files so every class shows up, rare classes first."""
+def pick_stratified(label_files, n, seed=0, priority=()):
+    """Choose n label files for visual checking, in this order:
+    EXIF-re-encoded images (up to n//4; where a frame error would show), at least
+    two per split, every class (rare classes first), then random fill.
+    priority holds "split/stem" keys."""
     rng = random.Random(seed)
+    chosen = []
+
+    def take(pool, k):
+        pool = [f for f in pool if f not in chosen]
+        chosen.extend(rng.sample(pool, min(k, len(pool))))
+
+    key = lambda f: f"{f.parent.name}/{f.stem}"
+    take([f for f in label_files if key(f) in set(priority)], n // 4)
+    for split in sorted({f.parent.name for f in label_files}):
+        have = sum(f.parent.name == split for f in chosen)
+        take([f for f in label_files if f.parent.name == split], max(0, 2 - have))
     by_cls = defaultdict(list)
     for f in label_files:
         for c in {int(l.split()[0]) for l in f.read_text().split("\n") if l.strip()}:
             by_cls[c].append(f)
-    chosen = []
     per_class = max(1, n // max(1, len(by_cls)))
     for c in sorted(by_cls, key=lambda c: len(by_cls[c])):
-        pool = [f for f in by_cls[c] if f not in chosen]
-        chosen += rng.sample(pool, min(per_class, len(pool)))
-    rest = [f for f in label_files if f not in chosen]
-    chosen += rng.sample(rest, min(max(0, n - len(chosen)), len(rest)))
+        have = sum(f in by_cls[c] for f in chosen)
+        take(by_cls[c], max(0, per_class - have))
+    take(label_files, max(0, n - len(chosen)))
     return chosen[:n]
 
 
 def labels(yolo: Path, out: Path, n: int, seed=0):
     out.mkdir(parents=True, exist_ok=True)
     files = sorted((yolo / "labels").glob("*/*.txt"))
+    stats = yolo / "conversion_stats.json"
+    exif = set(json.loads(stats.read_text()).get("exif_reencoded", [])) if stats.exists() else set()
     index = []
-    for f in pick_stratified(files, n, seed):
+    for f in pick_stratified(files, n, seed, exif):
         split = f.parent.name
         img_path = next((yolo / "images" / split).glob(f.stem + ".*"))
         img = cv2.imread(str(img_path))
@@ -76,7 +91,8 @@ def labels(yolo: Path, out: Path, n: int, seed=0):
         counts = defaultdict(int)
         for l in lines:
             counts[CLASSES[int(l.split()[0])]] += 1
-        index.append(f"{split}_{f.stem}.jpg  {dict(counts)}")
+        tag = "  [EXIF re-encoded]" if f"{split}/{f.stem}" in exif else ""
+        index.append(f"{split}_{f.stem}.jpg  {dict(counts)}{tag}")
     (out / "index.txt").write_text("\n".join(index) + "\n")
     print(f"{len(index)} overlays -> {out}")
 

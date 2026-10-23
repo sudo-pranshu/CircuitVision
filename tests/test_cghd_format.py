@@ -105,6 +105,7 @@ def test_converter_writes_exif_free_image_in_annotation_frame(tmp_path):
         "<bndbox><xmin>0</xmin><ymin>0</ymin><xmax>20</xmax><ymax>40</ymax></bndbox></object></annotation>")
     r = convert(tmp_path / "cghd", tmp_path / "yolo", set(), set())
     assert r["problems"]["exif_frame_raw"] == 1
+    assert len(r["exif_reencoded"]) == 1 and r["exif_reencoded"][0].startswith("train/")
     out = tmp_path / "yolo" / "images" / "train" / "drafter_1_C1_D1_P1.jpg"
     assert Image.open(out).getexif().get(274, 1) == 1
     img = cv2.imread(str(out))

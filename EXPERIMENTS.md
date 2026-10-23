@@ -68,7 +68,18 @@ The image pass runs on all CPUs and prints `Audited N/total images` every 100 im
   - If the sheets are inconclusive, leave the convention as `None`. Orientation is then skipped and reported as UNTESTED.
 - **Gate 2, after the label overlays:** set `GATE2_APPROVED` only if the boxes visibly sit on their symbols.
 
-Both approvals are saved, with your notes, to `gates/gate1.json` and `gates/gate2.json`.
+Both approvals are saved, with your notes, to `gates/gate1.json` and `gates/gate2.json`. After a runtime restart the gate cells load these files instead of asking again; delete a file to re-decide that gate. If the label conversion differs in any way from the one approved at Gate 2, the conversion cell stops.
+
+The Gate 2 sample (24 overlays) always includes: the photos whose EXIF rotation was baked in during conversion (up to a quarter of the sample), at least two images from each split, and every class, rare classes first.
+
+## Restarts
+
+The notebook is meant to be re-run with **Run all** after any disconnect. The first cell prints which stages exist on Drive; finished stages (audit, rotation sheets, detector test, orientation, downstream) are skipped unless named in `REDO`. Training uses `train.py --auto`, which reads `runs/train/weights/last.pt`:
+- an interrupted run resumes;
+- a finished run (ultralytics stores `epoch = -1` with no optimizer) is only recorded;
+- no checkpoint means a fresh start.
+
+The kill-and-resume path was tested with real ultralytics 8.4.184 on CPU (3-epoch quick run, killed after epoch 1, resumed at epoch 2), and both notebook sessions (fresh, then restarted) were run end to end on the fake CGHD fixture.
 
 ## baseline_v1: how to reproduce
 

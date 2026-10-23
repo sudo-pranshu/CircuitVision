@@ -2,6 +2,10 @@
 
   python -m circuitvision.train --data data/yolo/dataset.yaml --exp experiments/baseline_v1
   python -m circuitvision.train --data data/yolo/dataset.yaml --exp /tmp/smoke --quick
+  python -m circuitvision.train --data data/yolo/dataset.yaml --exp experiments/baseline_v1 --auto
+
+--auto picks the step from the checkpoint on disk: finished run -> record and
+exit, interrupted run -> resume from last.pt, nothing yet -> train from scratch.
 
 Everything that defines the run is fixed here (no "auto" choices), written to
 <exp>/train_config.json, and ultralytics' own args.yaml is copied next to it.
@@ -52,6 +56,27 @@ def environment() -> dict:
     return env
 
 
+def checkpoint_state(exp: Path):
+    """-> ("fresh", None) | ("resume", epochs_done) | ("done", None) from <exp>/runs/train/weights/last.pt.
+
+    ultralytics strips the optimizer and sets epoch=-1 when a run ends (all epochs
+    or early stopping); an interrupted run's last.pt keeps both.
+    """
+    last = exp / "runs" / "train" / "weights" / "last.pt"
+    if not last.exists():
+        return "fresh", None
+    import torch
+    try:
+        ckpt = torch.load(last, map_location="cpu", weights_only=False)
+    except Exception as e:
+        raise SystemExit(f"{last} cannot be read ({e}). It was probably cut off by a disconnect. "
+                         f"Rename the runs/train folder to keep it for reference, then train again.")
+    epoch = ckpt.get("epoch", -1)
+    if epoch == -1 and ckpt.get("optimizer") is None:
+        return "done", None
+    return "resume", epoch + 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True, type=Path)
@@ -60,14 +85,24 @@ def main():
     ap.add_argument("--batch", type=int, help="override only if the GPU runs out of memory")
     ap.add_argument("--resume", action="store_true",
                     help="continue an interrupted run from <exp>/runs/train/weights/last.pt")
+    ap.add_argument("--auto", action="store_true",
+                    help="resume if interrupted, skip if finished, otherwise train")
     a = ap.parse_args()
+
+    if a.auto:
+        state, done = checkpoint_state(a.exp)
+        print(f"training state: {state}" + (f" ({done} epochs done)" if done else ""), flush=True)
+        if state == "done":
+            _finish(a.exp / "runs" / "train", a)
+            return
+        a.resume = state == "resume"
 
     from ultralytics import YOLO
     if a.resume:                       # same run, same config: ultralytics restores its args
         last = a.exp / "runs" / "train" / "weights" / "last.pt"
         model = YOLO(str(last))
         model.train(resume=True)
-        _finish(model, a)
+        _finish(Path(model.trainer.save_dir), a)
         return
 
     cfg = dict(BASELINE)
@@ -85,18 +120,18 @@ def main():
     model = YOLO(cfg.pop("model"))
     model.train(data=str(a.data), device=pick_device(),
                 project=str(a.exp / "runs"), name="train", exist_ok=True, **cfg)
-    _finish(model, a)
+    _finish(Path(model.trainer.save_dir), a)
 
 
-def _finish(model, a):
+def _finish(run: Path, a):
     record_path = a.exp / "train_config.json"
     record = json.loads(record_path.read_text()) if record_path.exists() else {}
-    run = Path(model.trainer.save_dir)
     for f in ("args.yaml", "results.csv", "results.png"):
         if (run / f).exists():
             shutil.copy(run / f, a.exp / f)
     best = run / "weights" / "best.pt"
     record["best_checkpoint"] = str(best)
+    record["completed"] = True
     record_path.write_text(json.dumps(record, indent=1))
     print(f"best checkpoint: {best}")
     print(f"next: python -m circuitvision.detector_eval --weights {best} "
