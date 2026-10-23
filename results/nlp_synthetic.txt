@@ -1,0 +1,26 @@
+
+test (same templates): token accuracy 1.000, exact circuit match 1.000
+  SRC   P 1.00  R 1.00  F1 1.00
+  RES   P 1.00  R 1.00  F1 1.00
+  CAP   P 1.00  R 1.00  F1 1.00
+  IND   P 1.00  R 1.00  F1 1.00
+  DIO   P 1.00  R 1.00  F1 1.00
+  VAL   P 1.00  R 1.00  F1 1.00
+  UNIT  P 1.00  R 1.00  F1 1.00
+  SER   P 1.00  R 1.00  F1 1.00
+  PAR   P 1.00  R 1.00  F1 1.00
+  SEP   P 1.00  R 1.00  F1 1.00
+  O     P 1.00  R 1.00  F1 1.00
+
+held-out phrasings: token accuracy 0.897, exact circuit match 0.980
+  SRC   P 0.75  R 1.00  F1 0.86
+  RES   P 0.76  R 0.22  F1 0.34
+  CAP   P 0.30  R 0.25  F1 0.27
+  IND   P 0.00  R 0.00  F1 0.00
+  DIO   P 1.00  R 1.00  F1 1.00
+  VAL   P 1.00  R 1.00  F1 1.00
+  UNIT  P 0.86  R 1.00  F1 0.92
+  SER   P 1.00  R 1.00  F1 1.00
+  PAR   P 1.00  R 1.00  F1 1.00
+  SEP   P 0.96  R 1.00  F1 0.98
+  O     P 0.90  R 0.98  F1 0.94

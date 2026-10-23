@@ -46,3 +46,40 @@ def test_value_normalisation():
     assert class_from_unit("1mH") == "inductor"
     assert class_from_unit("10k") == "resistor"
     assert class_from_unit("10") is None
+
+
+# Development sentences for nested grouping, counts, RKM codes and part numbers.
+# Written separately from the frozen evaluation set (nlp/data/handwritten_eval.jsonl).
+DEV = [
+    ("a 10k resistor in parallel with a 10k resistor, then in series with a 5k resistor",
+     None, "S(P(resistor:10k,resistor:10k),resistor:5k)"),
+    ("(a 100 ohm resistor in parallel with a 100 ohm resistor) in series with a 50 ohm resistor",
+     None, "S(P(resistor:100,resistor:100),resistor:50)"),
+    ("a 2k resistor in series with (a 3k resistor in parallel with a 6k resistor) powered by a 9V battery",
+     "DC 9", "S(resistor:2k,P(resistor:3k,resistor:6k))"),
+    ("three 1k resistors in parallel", None, "P(resistor:1k,resistor:1k,resistor:1k)"),
+    ("a 1N4007 diode in series with a 4k7 resistor", None, "S(diode:-,resistor:4.7k)"),
+    ("a 2R2 resistor in series with a 1M5 resistor", None, "S(resistor:2.2,resistor:1.5meg)"),
+    ("a 5k resistor in series with a 5k resistor, all in parallel with a 10k resistor across a 12V supply",
+     "DC 12", "P(S(resistor:5k,resistor:5k),resistor:10k)"),
+    ("a 3n3 cap in parallel with a 4k7 res", None, "P(capacitor:3.3n,resistor:4.7k)"),
+]
+
+
+def test_dev_nested_counts_rkm():
+    tagger = load_tagger()
+    for text, src_val, gold in DEV:
+        src, tree = parse(tokenize(text), tagger.tag(tokenize(text)))
+        assert (canonical(tree), src[2] if src else None) == (gold, src_val), text
+
+
+def test_unbalanced_parenthesis_does_not_crash():
+    tagger = load_tagger()
+    w = tokenize("(a 1k resistor in series with a 2k resistor")
+    assert canonical(parse(w, tagger.tag(w))[1]) == "S(resistor:1k,resistor:2k)"
+
+
+def test_frozen_eval_set_is_well_formed():
+    from circuitvision.nlp.evaluate import load
+    items = load()
+    assert len(items) == 30 and all(len(i["tokens"]) == len(i["tags"]) for i in items)

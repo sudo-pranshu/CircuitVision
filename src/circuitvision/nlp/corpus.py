@@ -17,8 +17,9 @@ NOUNS = {
     "diode": (["diode", "led"], "DIO"),
 }
 VALUES = {
-    "resistor": [("10k", None), ("1k", None), ("220", "ohm"), ("4.7", "k"), ("100k", None), ("330", "ohms")],
-    "capacitor": [("10uF", None), ("100nF", None), ("47", "uf"), ("1uF", None)],
+    "resistor": [("10k", None), ("1k", None), ("220", "ohm"), ("4.7", "k"), ("100k", None), ("330", "ohms"),
+                 ("4k7", None), ("2R2", None), ("1M5", None)],
+    "capacitor": [("10uF", None), ("100nF", None), ("47", "uf"), ("1uF", None), ("3n3", None)],
     "inductor": [("1mH", None), ("10mH", None), ("100", "uh")],
 }
 SRC_NOUNS = ["battery", "supply", "source", "cell"]
@@ -57,6 +58,9 @@ def component(rng, held_out):
     noun = (rng.choice(words), tag)
     if cls == "diode":
         art = "an" if noun[0] == "led" else "a"
+        if rng.random() < 0.3:                       # part number or colour: a name, not a value
+            name = rng.choice(["1N4148", "1N4007", "red", "green", "zener"])
+            return [("a", "O"), (name, "O"), noun], E(cls)
         return [(art, "O"), noun], E(cls)
     val, text = _value_tokens(rng, VALUES[cls])
     form = rng.randrange(3)
@@ -79,9 +83,32 @@ def source(rng):
 
 def load(rng, held_out):
     ser, par = (HO_SER, HO_PAR) if held_out else (SER, PAR)
-    kind = rng.choice(["single", "chain2", "chain3", "list"])
+    kind = rng.choice(["single", "chain2", "chain3", "list", "list", "comma_group", "paren", "count"])
     if kind == "single":
         return component(rng, held_out)
+    if kind == "count":                              # "two 1k resistors in series"
+        n = rng.choice([2, 3])
+        k = rng.choice(["S", "P"])
+        val, text = _value_tokens(rng, VALUES["resistor"])
+        toks = [({2: "two", 3: "three"}[n], "O")] + val + [("resistors", "RES")] + \
+            _tagged(["in", "series" if k == "S" else "parallel"])
+        leaf = E("resistor", spice_value(text, "resistor"))
+        return toks, op(k, [leaf] * n)
+    if kind in ("comma_group", "paren"):
+        (t1, c1), (t2, c2), (t3, c3) = (component(rng, held_out) for _ in range(3))
+        k_in, k_out = rng.choice(["S", "P"]), rng.choice(["S", "P"])
+        word = lambda k: "series" if k == "S" else "parallel"
+        if kind == "comma_group":
+            if rng.random() < 0.5:                   # "A and B in parallel, in series with C"
+                inner = t1 + _tagged(["and"]) + t2 + _tagged(["in", word(k_in)])
+            else:                                    # "A in series with B, all in parallel with C"
+                inner = t1 + _tagged(rng.choice(ser if k_in == "S" else par)) + t2
+            toks = inner + _tagged([","]) + ([("all", "O")] if rng.random() < 0.5 else []) + \
+                _tagged(rng.choice(ser if k_out == "S" else par)) + t3
+        else:                                        # "(A in parallel with B) in series with C"
+            toks = [("(", "O")] + t1 + _tagged(rng.choice(ser if k_in == "S" else par)) + t2 + \
+                [(")", "O")] + _tagged(rng.choice(ser if k_out == "S" else par)) + t3
+        return toks, op(k_out, [op(k_in, [c1, c2]), c3])
     if kind == "list":
         n = rng.randint(2, 3)
         comps = [component(rng, held_out) for _ in range(n)]

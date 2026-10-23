@@ -110,8 +110,12 @@ def to_markdown(r: dict) -> str:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, help="write <out>.json and <out>.md")
+    ap.add_argument("--set", type=Path, default=EVAL,
+                    help="evaluation file (default: the 30-sentence set; data/handwritten_fresh.jsonl "
+                         "is a second 20-sentence set written after development and evaluated once)")
     a = ap.parse_args()
-    r = evaluate(load())
+    r = evaluate(load(a.set))
+    r["label"] += f" [{a.set.name}]"
     md = to_markdown(r)
     print(md)
     if a.out:

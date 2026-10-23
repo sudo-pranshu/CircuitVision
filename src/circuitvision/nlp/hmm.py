@@ -20,8 +20,8 @@ class HMMTagger:
         self.t_index = {t: i for i, t in enumerate(TAGS)}
 
     def _norm(self, w: str) -> str:
-        w = w.lower()
-        return w if w in self.w_index else shape(w)
+        wl = w.lower()
+        return wl if wl in self.w_index else shape(w)      # shape sees case: 2R2 vs 1N4148
 
     def fit(self, sents: list[tuple[list[str], list[str]]]):
         counts = Counter(w.lower() for words, _ in sents for w in words)
