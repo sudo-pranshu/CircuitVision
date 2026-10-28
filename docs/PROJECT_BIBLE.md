@@ -4,7 +4,7 @@ The permanent technical reference, onboarding guide and handover document for Ci
 
 | | |
 |---|---|
-| Last updated | 2026-10-23 |
+| Last updated | 2026-10-28 |
 | Written against commit | `c3dfdb1` on `main` |
 | Owner | Pranshu Kumar (VJTI, B.Tech EXTC, AI/ML minor) |
 | Repository | https://github.com/sudo-pranshu/CircuitVision (public) |
@@ -235,6 +235,7 @@ CircuitVision/
 ├── scripts/
 │   ├── pin_opencv.sh         leaves exactly one OpenCV build (headless 4.10.0.84)
 │   └── check_opencv.py       verifies cv2.HOGDescriptor / ml.SVM before GPU steps
+├── report/                   source of the submission report (content, docx builder, figures)
 ├── results/                  committed, small, synthetic/controlled results only
 ├── src/circuitvision/        the package (see table below)
 │   └── nlp/                  text → netlist
@@ -706,7 +707,7 @@ Status as of `c3dfdb1`. Passing unit tests is **not** a real-photo result.
 | ngspice simulation | COMPLETE | Unit-tested; operating points match references on synthetic data |
 | NLP evaluation | COMPLETE | Fresh set 0.90 exact (HAND-WRITTEN, 20 sentences) |
 | Gradio application | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Handler exercised with a synthetic model; needs real weights |
-| Final report | IN PROGRESS | Written; the real-results section (17.1) is pending |
+| Final report | IN PROGRESS | Word report in the institute template is built from `report/`; real-results section 6.3 is pending |
 | Presentation | IN PROGRESS | 14 slides; the status/results rows are pending |
 | Final demonstration | NOT STARTED | Needs real weights from the Colab run |
 
@@ -732,7 +733,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | ID | Task | Pri | Depends on | Output | Acceptance |
 |---|---|---|---|---|---|
 | C-1 | Review the Gate 1 evidence and recommend a convention | P0 | P-1 | Written recommendation citing the sheets and loader | Owner approves or overrides |
-| C-2 | Fill the report's §17.1, the slides and `EXPERIMENTS.md` from the evidence zip | P0 | P-5 | Updated report, deck and docs | Every number traceable to a file in the zip |
+| C-2 | Fill the report's §6.3 (and other PENDING markers in `report/content.js`), the slides and `EXPERIMENTS.md` from the evidence zip, then rebuild | P0 | P-5 | Updated report, deck and docs | Every number traceable to a file in the zip |
 | C-3 | Error analysis of detector and downstream failures on drafter 12 | P1 | P-5 | Report section and figures | Uses `test/qualitative/` and `downstream/*.csv` |
 | C-4 | Support for reference netlists stored in the repo for drafter 12 (from T-3) | P1 | T-3 | Small change in `evaluate.py` plus a test | Real `topology_match` reported where references exist |
 | C-5 | Bug fixes and regression tests for anything the real run exposes | P0 | P-1…P-5 | PRs | `pytest` green; the fix is tested |
@@ -773,7 +774,8 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 
 | Deliverable | Where | Status | Pending |
 |---|---|---|---|
-| Final report (23 sections) | Claude Docs artifact, private to Pranshu until shared: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn | Written | §17.1 real CGHD results, and any discussion that depends on them |
+| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 47 pages | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
+| Earlier report draft | Claude Docs artifact, private: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn | Superseded by the Word report | — |
 | Slide deck (14 slides) | Claude Slides artifact, private until shared: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD | Written | "status" slide rows marked pending; detection slide numbers |
 | Results tables | [`results/tables.md`](../results/tables.md) (synthetic); `experiments/baseline_v1/tables.md` (real, after the run) | Generated | The REAL section reads NOT AVAILABLE until the run |
 | Experiment protocol | [`EXPERIMENTS.md`](../EXPERIMENTS.md) | Current | "Results: baseline_v1" section |

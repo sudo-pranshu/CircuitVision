@@ -1,6 +1,6 @@
 # CircuitVision: Project Status
 
-Updated 2026-10-23 · `main` at `c3dfdb1` + this docs commit · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE.md)
+Updated 2026-10-28 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE.md)
 
 ## Summary
 
@@ -18,6 +18,10 @@ The pipeline (image → netlist → validation → simulation, plus text → net
   - training resumes automatically;
   - gate approvals are saved;
   - Gate 2 overlays cover every split, every class and the EXIF re-encoded photos.
+
+## Final report
+
+The submission report (Word, institute template, 47 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Every real-CGHD value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences; the cover's date of submission is also a highlighted placeholder. After the Colab run, Claude replaces the pending values from the evidence files and rebuilds.
 
 ## Tested
 
@@ -44,7 +48,7 @@ The pipeline (image → netlist → validation → simulation, plus text → net
 | 2 | Pranshu → Claude | Send `audit/audit.md`, `audit/dataset_docs/` and `rotation_check/*.png` from Drive. Claude recommends the convention; Pranshu sets Gate 1. |
 | 3 | Pranshu | Run all → inspect the 24 overlays → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
 | 4 | Pranshu → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
-| 5 | Teammate | Onboarding (Bible §15), then tasks T-1, T-2 and T-3 (Bible §11.3). |
+| 5 | Teammate | Onboarding (Bible §15), then tasks T-1, T-2 and T-3 (Bible §11.3). Proof-read `report/content.js` against `results/` (T-5). |
 
 ## Commands
 
@@ -58,7 +62,7 @@ python -m circuitvision.report_tables --exp <evidence folder> --out tables.md
 ## Links
 
 - [README](../README.md) · [EXPERIMENTS](../EXPERIMENTS.md) · [Project Bible](PROJECT_BIBLE.md) · [Colab notebook](../notebooks/train_colab.ipynb) · [Synthetic results tables](../results/tables.md)
-- Report: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn (private until Pranshu shares it)
+- Report: Word file built from [`report/`](../report/README.md) (submission format). Earlier draft: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn (private)
 - Slides: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD (private until Pranshu shares it)
 
 *Update this file whenever a significant task finishes. Update the Bible only when architecture, methodology, assumptions or project facts change.*
