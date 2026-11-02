@@ -6,7 +6,7 @@ Updated 2026-11-02 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE
 
 The pipeline (image → netlist → validation → simulation, plus text → netlist) is **implemented, tested and verified on synthetic data**.
 
-**The real CGHD experiment (baseline_v1) has not run yet**, so no real-photo metric exists. The project is **not complete** until it runs.
+**The real CGHD experiment (baseline_v1) has not run yet**, so no baseline metric exists. The project is **not complete** until it runs. The real dataset has been audited and Gates 1 and 2 are decided; see [EXPERIMENTS.md](../EXPERIMENTS.md#full-dataset-checks-2026-11-02-md5-checked-v14).
 
 ## What works
 
@@ -53,8 +53,6 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 
 ## Not tested
 
-- The full CGHD audit and the rotation convention (Gate 1).
-- Label conversion on real data (Gate 2).
 - YOLO detection, orientation, OCR and topology on real photos.
 - The Gradio demo with real weights.
 
@@ -62,10 +60,10 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 
 | # | Who | Action |
 |---|---|---|
-| 1 | Pranshu | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. It stops at Gate 1. |
-| 2 | Pranshu → Claude | Send `audit/audit.md`, `audit/dataset_docs/` and `rotation_check/*.png` from Drive. Claude recommends the convention; Pranshu sets Gate 1. |
-| 3 | Pranshu | Run all → inspect the 24 overlays → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
-| 4 | Pranshu → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
+| 1 | Pawan and Pranshu | Merge the placeholder-size and `voltage.dc` fixes into `main`; the notebook clones `main`, and without them it trains on misplaced labels. |
+| 2 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
+| 3 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
+| 4 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
 | 5 | Teammate | Onboarding (Bible §15), then tasks T-1, T-2 and T-3 (Bible §11.3). Proof-read `report/content.js` against `results/` (T-5). |
 
 ## Commands

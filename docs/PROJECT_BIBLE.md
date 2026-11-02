@@ -795,7 +795,8 @@ Figures generated from artifacts: `results.png` (training curves), the confusion
 | Area | Effect | Current workaround | State | To improve |
 |---|---|---|---|---|
 | Dataset access / execution | No real result exists. This build environment cannot reach Zenodo or a GPU. | The notebook runs on Colab and is restart-safe | Unresolved (needs P-1…P-5) | Run the notebook |
-| Rotation convention | Polarity of diodes and sources may be reversed | Gate 1 decision; code defaults labelled unverified; mirrored parts excluded | Unresolved | Gate 1 with the dataset's loader script |
+| Rotation convention | `PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`; `voltage.dc` needs +270° (`parse_voc`) | Gate 1 decided from the real sheets on 2026-11-02; mirrored parts excluded | Decided; polarity accuracy still rests on small test counts | Compare with a larger labelled set |
+| Placeholder XML sizes | Drafters -1, 29 and 30 say 1000x1000 in `<size>` while boxes use real pixels | `annotation_size` uses the real image size (336 training images) | Fixed | — |
 | Wire tracing | Assumes wires meet boxes from their sides. Touching wires merge; a pen gap wider than the gap-close distance splits a net. | Scale-adaptive parameters, gap closing, sliver removal | Acceptable for scope (synthetic 0.994) | Skeleton-graph tracing; learned wire segmentation |
 | Crossover vs junction | A crossover box shifted by about 15 % no longer covers the crossing, so nets merge. A crossing without a detected crossover symbol is treated as a connection. | Crossover opposite-side joining | Known (synthetic box jitter 15 %: 0.93) | Local line-direction analysis at crossings |
 | OCR | The allowlist reads values only (not names like `R1`); handwriting variation; label-to-element distance assumptions | Unit/class agreement, one label per element, distance limit | Unmeasured on real data | Fine-tuned recogniser; better text-to-element assignment |

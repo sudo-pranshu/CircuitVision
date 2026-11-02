@@ -323,7 +323,7 @@ def benchmark(extract, seeds=(0, 1, 2)) -> dict:
 VALUES = {"resistor": ["1k", "4k7", "10k", "220", "2R2"], "capacitor": ["10uF", "100n", "4,7uF"],
           "inductor": ["1mH", "10mH"], "voltage_source": ["5V", "12V", "9V"]}
 CGHD_LABEL = {"resistor": "resistor", "capacitor": "capacitor.unpolarized", "inductor": "inductor",
-              "voltage_source": "voltage.dc", "diode": "diode", "gnd": "gnd", "crossover": "crossover",
+              "voltage_source": "voltage.battery", "diode": "diode", "gnd": "gnd", "crossover": "crossover",
               "text": "text"}
 
 

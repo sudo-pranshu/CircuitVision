@@ -64,7 +64,12 @@ def parse_voc(xml_path: Path, raw: bool = False, keep_other: bool = False):
         b = o.find("bndbox")
         x1, y1, x2, y2 = (float(b.findtext(k)) for k in ("xmin", "ymin", "xmax", "ymax"))
         mirror = next((_field(o, t) for t in MIRROR_TAGS if _field(o, t) is not None), None)
-        objs.append(VocObject(cls, x1, y1, x2, y2, o.findtext("text"), _field(o, "rotation"), mirror))
+        rotation = _field(o, "rotation")
+        if not raw and name == "voltage.dc" and rotation is not None:
+            # Gate 1: voltage.dc is labelled 0 with + on top, every other polarized
+            # symbol has + on the left at 0, which puts + on top at 270
+            rotation = str((float(rotation) + 270) % 360)
+        objs.append(VocObject(cls, x1, y1, x2, y2, o.findtext("text"), rotation, mirror))
     return w, h, objs
 
 
@@ -128,6 +133,23 @@ def load_for_annotation(path: Path, w: int, h: int):
     return shown, ("displayed" if s_ok else "mismatch")
 
 
+def annotation_size(path: Path, w: int, h: int) -> tuple[int, int]:
+    """Size of the pixel frame the boxes refer to.
+
+    Drafters -1, 29 and 30 have a placeholder <size> of 1000x1000 with boxes in
+    displayed-image pixels. An XML size matching neither frame is replaced by the
+    displayed size; a header read, so no decode.
+    """
+    from PIL import Image
+    try:
+        with Image.open(path) as im:
+            raw = im.size
+    except OSError:
+        return w, h
+    shown = raw[::-1] if exif_orientation(path) in (5, 6, 7, 8) else raw
+    return (w, h) if (w, h) in (raw, shown) else shown
+
+
 def find_image(img_dir: Path, stem: str):
     for ext in IMG_EXT:
         for cand in (img_dir / (stem + ext), img_dir / (stem + ext.upper())):
@@ -165,6 +187,9 @@ def convert(cghd: Path, out: Path, val: set, test: set) -> dict:
                 stats["missing_size"] += 1
                 failures.append(f"{drafter.name}/{xml.name}: size {w}x{h}")
                 continue
+            if annotation_size(img, w, h) != (w, h):
+                stats["xml_size_placeholder"] += 1
+                w, h = annotation_size(img, w, h)
             objs = []
             for o in raw_objs:
                 cls = map_cghd(o.cls)

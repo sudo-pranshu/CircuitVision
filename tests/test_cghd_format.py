@@ -9,7 +9,7 @@ from circuitvision import netlist, preprocess, topology
 from circuitvision.audit import audit
 from circuitvision.cghd_to_yolo import convert, load_for_annotation, parse_voc
 from circuitvision.classes import OTHER, map_cghd
-from circuitvision.orientation import from_cghd, is_mirrored
+from circuitvision.orientation import from_cghd, is_mirrored, positive_side
 from circuitvision.pipeline import detections_from_xml
 from circuitvision.types import Detection
 
@@ -110,6 +110,43 @@ def test_converter_writes_exif_free_image_in_annotation_frame(tmp_path):
     assert Image.open(out).getexif().get(274, 1) == 1
     img = cv2.imread(str(out))
     assert img.shape[:2] == (40, 60) and img[:, :15].mean() < 60   # dark band where the box is
+
+
+def test_voltage_dc_rotation_puts_plus_on_top(tmp_path):
+    x = tmp_path / "a.xml"
+    x.write_text("<annotation><object><name>voltage.dc</name><bndbox><xmin>0</xmin><ymin>0</ymin>"
+                 "<xmax>9</xmax><ymax>9</ymax><rotation>0</rotation></bndbox></object></annotation>")
+    assert parse_voc(x, raw=True)[2][0].rotation == "0"       # the raw value stays visible to the audit
+    o = parse_voc(x)[2][0]
+    assert positive_side(o.cls, from_cghd(o.rotation)) == "top"
+
+
+def _placeholder_size_tree(root, image):
+    d = root / "drafter_1"
+    (d / "annotations").mkdir(parents=True)
+    (d / "images").mkdir()
+    image(d / "images" / "C1_D1_P1.jpg")
+    (d / "annotations" / "C1_D1_P1.xml").write_text(
+        "<annotation><size><width>1000</width><height>1000</height></size><object><name>resistor</name>"
+        "<bndbox><xmin>1200</xmin><ymin>300</ymin><xmax>1400</xmax><ymax>500</ymax></bndbox></object></annotation>")
+
+
+def test_converter_ignores_placeholder_xml_size(tmp_path):
+    # drafters -1, 29 and 30: <size> says 1000x1000, boxes are in real image pixels
+    _placeholder_size_tree(tmp_path / "cghd", lambda p: Image.new("RGB", (1600, 800)).save(p))
+    r = convert(tmp_path / "cghd", tmp_path / "yolo", set(), set())
+    assert r["problems"] == {"xml_size_placeholder": 1}
+    label = (tmp_path / "yolo" / "labels" / "train" / "drafter_1_C1_D1_P1.txt").read_text().split()
+    assert [float(v) for v in label[1:]] == [0.8125, 0.5, 0.125, 0.25]
+
+
+def test_placeholder_xml_size_uses_the_displayed_frame(tmp_path):
+    _placeholder_size_tree(tmp_path / "cghd", lambda p: _exif_jpeg(p, 6, w=800, h=1600))   # displayed 1600x800
+    r = convert(tmp_path / "cghd", tmp_path / "yolo", set(), set())
+    assert r["problems"] == {"xml_size_placeholder": 1, "exif_frame_displayed": 1}
+    label = (tmp_path / "yolo" / "labels" / "train" / "drafter_1_C1_D1_P1.txt").read_text().split()
+    assert [float(v) for v in label[1:]] == [0.8125, 0.5, 0.125, 0.25]
+    assert cv2.imread(str(tmp_path / "yolo" / "images" / "train" / "drafter_1_C1_D1_P1.jpg")).shape[:2] == (800, 1600)
 
 
 def test_out_of_scope_symbol_does_not_short_wires():
