@@ -1,6 +1,6 @@
 # CircuitVision: Project Status
 
-Updated 2026-10-28 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE.md)
+Updated 2026-11-02 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE.md)
 
 ## Summary
 
@@ -32,6 +32,23 @@ The submission report (Word, institute template, 47 pages) is built from [`repor
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
 | Text → netlist, fresh 20 sentences (evaluated once) | 0.90 exact circuit | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
+
+## Reproduced by the teammate (T-1, 2026-11-02)
+
+macOS on Apple Silicon, Python 3.13.18, full install with OpenCV headless 4.10.0.84, ngspice 47. Regenerated outside the repository and compared with the committed files.
+
+| What | Result |
+|---|---|
+| `pytest -q` | 107 pass, 0 skipped |
+| Divider example with `--simulate` | Valid; v(2) = 0.4545 V |
+| `results/tables.md` | Identical |
+| `synthetic_topology.json` and `.txt` | Identical |
+| `nlp_eval.json` and `.md`, `nlp_eval_fresh.json` and `.md`, `nlp_synthetic.txt` | Identical |
+| GT-box pipeline, synthetic drafters 10–12, no OCR | 18/18: topology, exact and operating-point match 1.00 |
+
+Not reproduced:
+- EasyOCR values (0.914 exact, 0.950 character accuracy): the model download from `release-assets.githubusercontent.com` was reset on this network.
+- Detector-mode end to end: needs a 40-epoch CPU training run.
 
 ## Not tested
 
