@@ -44,11 +44,12 @@ macOS on Apple Silicon, Python 3.13.18, full install with OpenCV headless 4.10.0
 | `results/tables.md` | Identical |
 | `synthetic_topology.json` and `.txt` | Identical |
 | `nlp_eval.json` and `.md`, `nlp_eval_fresh.json` and `.md`, `nlp_synthetic.txt` | Identical |
-| GT-box pipeline, synthetic drafters 10–12, no OCR | 18/18: topology, exact and operating-point match 1.00 |
+| GT-box pipeline, synthetic drafters 10–12 | 18/18: topology, exact and operating-point match 1.00 |
+| EasyOCR, same run (70 labels) | 0.914 exact, 0.950 character accuracy, as recorded |
 
-Not reproduced:
-- EasyOCR values (0.914 exact, 0.950 character accuracy): the model download from `release-assets.githubusercontent.com` was reset on this network.
-- Detector-mode end to end: needs a 40-epoch CPU training run.
+The EasyOCR model download from `release-assets.githubusercontent.com` was reset on one network and worked on another.
+
+Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training run.
 
 ## Not tested
 
