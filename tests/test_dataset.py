@@ -20,7 +20,7 @@ def test_parse_voc_reads_rotation_and_text(tmp_path):
     _, _, objs = parse_voc(next((root / "drafter_1" / "annotations").glob("C0*.xml")))
     by_cls = {o[0]: o for o in objs}
     assert by_cls["diode"].rotation == "91"
-    assert by_cls["voltage_source"].rotation == "0"
+    assert by_cls["voltage_source"].rotation == "270.0"     # voltage.dc: + on top at label 0 (Gate 1)
     assert by_cls["text"].text == "10k"
     assert "transistor.bjt" not in by_cls
 

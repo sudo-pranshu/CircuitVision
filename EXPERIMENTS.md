@@ -12,13 +12,13 @@ Every result carries one of three labels: **REAL CGHD**, **SYNTHETIC/CONTROLLED*
 | EasyOCR on synthetic value labels: 0.914 exact, 0.950 character accuracy | SYNTHETIC/CONTROLLED | Same run |
 | Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90 | CONTROLLED (hand-written) | `results/nlp_eval*.json` |
 | `train.py`, `detector_eval.py`, `evaluate.py --weights --ocr`, `orientation.py`, `report_tables.py` | Executed end to end on CPU (torch 2.14, ultralytics 8.4.184) | Synthetic data only; numbers carry no meaning about real photos |
-| CGHD audit, rotation convention | UNTESTED | Awaiting the Colab run and Gate 1 |
+| CGHD audit, rotation convention (`PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`), label overlays | REAL CGHD (dataset checks, no model metric) | Run locally on the MD5-checked v14 zip, 2026-11-02; Gates 1 and 2 approved by Pawan. See the findings below |
 | YOLOv8s detection on test drafter 12 | UNTESTED | Awaiting the Colab run |
 | Downstream stages on real photos (GT boxes / detector) | UNTESTED | Awaiting the Colab run |
 
 No REAL CGHD metric exists yet, and nothing here may be reported as a real-photo result until `baseline_v1` has run.
 
-Why it hasn't run: the build environment can't reach Zenodo, GitLab, Kaggle or Hugging Face, and has no GPU. The experiment runs on Colab.
+Why it hasn't run: training needs a GPU. At the fixed settings, a 16 GB Apple M5 took about 132 s per batch (about 29 days for 100 epochs), so the experiment runs on Colab.
 
 ## Findings from real CGHD annotations (before any training)
 
@@ -30,6 +30,13 @@ These were checked against real annotation files (`drafter_13/C145_D1_P1.xml`, `
 - **CGHD has many out-of-scope symbols** (transistors, ICs, lamps, switches). They're now masked during wire tracing so their ink can't short two wires together, and every downstream metric is also reported on the in-scope-only subset.
 - **The CGHD paper uses a different split:** train on drafters 1–20 and 25, validate on 21–22, test on 23–24. This baseline keeps the split fixed earlier (validation 11, test 12), so its numbers aren't directly comparable with the paper's.
 - **A newer release exists** (Zenodo v16, 2025, 4.9 GB). The notebook pins v14 by MD5 for reproducibility.
+
+### Full dataset checks (2026-11-02, MD5-checked v14)
+
+- **Rotation convention (Gate 1).** Diode, LED and Zener sheets show the anode on the left at 0° and the symbol turning counter-clockwise; the dataset's `classes_ports.json` and `utils.transform` agree for diodes. Battery sheets fit the same convention. The ports file doesn't match the sheets for voltage sources, so the sheets were used.
+- **`voltage.dc` is an exception.** All 182 rotated crops are labelled 0° with + on top. `parse_voc` now adds 270° for this label; the raw value stays available to the audit. None are in test drafter 12, so this changes only the training crops. Orientation accuracy on drafter 12 voltage sources (32 real crops): 0.875 before, 0.906 with `voltage.dc` excluded, 0.938 corrected. Diodes: 0.950 in all three. **These test crops were seen while choosing the fix, and this was a local run, not baseline_v1.**
+- **Placeholder XML sizes (Gate 2).** In 336 training images from drafters -1, 29 and 30, `<size>` says 1000x1000 while the boxes are in displayed-image pixels. The first conversion dropped 5,321 boxes and misplaced others. `annotation_size` now uses the real size: 1 box dropped, 5 clipped, 210,782 training objects (was 205,462). Validation and test labels are unchanged. Regression tests: `test_converter_ignores_placeholder_xml_size`, `test_placeholder_xml_size_uses_the_displayed_frame`.
+- **The test split has no `gnd` symbols** and only 32 voltage sources and 40 diodes, so ground-symbol and polarity results on drafter 12 rest on few or no examples.
 
 ## Environment
 
