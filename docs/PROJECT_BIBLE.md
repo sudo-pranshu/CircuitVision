@@ -549,7 +549,7 @@ Python ≥ 3.10 is required (`pyproject.toml`). The test runs recorded here used
 
 ### 7.2 Dependencies (`pyproject.toml`)
 
-- **Base:** `opencv-python`, `numpy`, `pillow`. This is enough for wire tracing, netlists, grammar, NLP and most tests.
+- **Base:** `opencv-python<5` (OpenCV 5 has no `cv2.HOGDescriptor`), `numpy`, `pillow`. This is enough for wire tracing, netlists, grammar, NLP and most tests.
 - **`detect`:** `ultralytics==8.4.184`, `easyocr==1.7.2`. These pull in PyTorch.
 - **`app`:** `gradio>=5`.
 - **`dev`:** `pytest`.

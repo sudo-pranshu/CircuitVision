@@ -2,7 +2,7 @@
 name = "circuitvision"
 version = "0.1.0"
 requires-python = ">=3.10"
-dependencies = ["opencv-python", "numpy", "pillow"]
+dependencies = ["opencv-python<5", "numpy", "pillow"]   # OpenCV 5 has no cv2.HOGDescriptor (orientation.py)
 
 [project.optional-dependencies]
 detect = ["ultralytics==8.4.184", "easyocr==1.7.2"]   # versions the pipeline was tested with
