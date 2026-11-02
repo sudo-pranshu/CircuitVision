@@ -693,11 +693,11 @@ Status as of `c3dfdb1`. Passing unit tests is **not** a real-photo result.
 | Installation | COMPLETE | Extras pinned; `pin_opencv.sh`; installed in a clean venv |
 | Tests | COMPLETE | 107 pass (`pytest -q`, Linux, ngspice present) |
 | Dataset download | IN PROGRESS | Automated and MD5-checked in the notebook. An earlier Colab session reached the download and audit, but whether the zip is cached on the owner's Drive is **not verified from here**. |
-| Dataset audit | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | `audit.py` is fast and tested; no `audit.md` from the real dataset has been produced or shared |
-| Annotation verification | IN PROGRESS | Format verified on 2 real XML files; full-dataset check pending (audit + Gate 2) |
-| Rotation convention | BLOCKED | Needs Gate 1: a human reads the real rotation sheets and `dataset_docs/` |
-| Label conversion | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Tested on fixtures; Gate 2 overlays pending |
-| YOLO training | BLOCKED | Waits on Gates 1–2 and a Colab T4 run; config fixed in `train.BASELINE` |
+| Dataset audit | COMPLETE | Run by Pawan on the MD5-checked v14 zip on a Mac, 2026-11-02; the Colab run repeats it |
+| Annotation verification | COMPLETE | Full-dataset audit and Gate 2 overlays; found the placeholder XML sizes, now fixed |
+| Rotation convention | COMPLETE | Gate 1 decided by Pawan, 2026-11-02: `PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`, plus the `voltage.dc` correction |
+| Label conversion | COMPLETE | Gate 2 decided by Pawan, 2026-11-02, after the placeholder-size fix |
+| YOLO training | BLOCKED | Waits on merging the label fixes into `main` and a Colab T4 run; config fixed in `train.BASELINE` |
 | Detector evaluation | BLOCKED | Waits on training; tooling tested on synthetic data |
 | Orientation evaluation | BLOCKED | Waits on Gate 1. SYNTHETIC: 5/5 on held-out synthetic drafter 12. |
 | Topology evaluation | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | SYNTHETIC: 0.994 exact over 11 conditions. Real topology can only be measured through proxies until hand-made reference netlists exist. |
@@ -721,10 +721,10 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 
 | ID | Task | Pri | Status | Depends on | Environment | Output | Acceptance |
 |---|---|---|---|---|---|---|---|
-| P-1 | Run the notebook on a fresh T4 up to Gate 1 | P0 | Not started | — | Colab + Drive | `audit/`, `rotation_check/` on Drive | Status cell shows the audit and rotation sheets done |
-| P-2 | Gate 1: decide `PLUS_AT_0` and `CGHD_CLOCKWISE` from the real sheets and `dataset_docs/` (send them to Claude for a second opinion) | P0 | Blocked by P-1 | P-1 | Colab | `gates/gate1.json` | Values set or explicitly `None`, with notes |
-| P-3 | Gate 2: inspect all 24 overlays | P0 | Blocked | P-2 | Colab | `gates/gate2.json` | Every box sits on its symbol, including the EXIF-tagged images |
-| P-4 | Let training finish (Run all again after any disconnect) | P0 | Blocked | P-3 | Colab T4, about 3–5 h | `runs/train/weights/best.pt`, `results.csv` | `train_config.json` has `"completed": true` |
+| P-1 | Run the audit and rotation sheets | P0 | Done by Pawan on a Mac, 2026-11-02; the Colab run repeats it | — | Mac, then Colab + Drive | `audit/`, `rotation_check/` | Audit and rotation sheets done |
+| P-2 | Gate 1: decide `PLUS_AT_0` and `CGHD_CLOCKWISE` from the real sheets and `dataset_docs/` | P0 | Done by Pawan, 2026-11-02: `left`, `False`. Enter the same values in the Colab gate cell | P-1 | Mac, then Colab | `gates/gate1.json` | Values set, with notes |
+| P-3 | Gate 2: inspect all 24 overlays | P0 | Done by Pawan, 2026-11-02, on the local conversion. Confirm the overlays in the Colab gate cell | P-2 | Mac, then Colab | `gates/gate2.json` | Every box sits on its symbol, including the EXIF-tagged images |
+| P-4 | Let training finish (Run all again after any disconnect) | P0 | Blocked by merging the label fixes into `main` | P-3 | Colab T4, about 3–5 h | `runs/train/weights/best.pt`, `results.csv` | `train_config.json` has `"completed": true` |
 | P-5 | Run test and downstream evaluation, then download the evidence zip | P0 | Blocked | P-4 | Colab | `baseline_v1_evidence.zip` | `tables.md` shows REAL CGHD tables |
 | P-6 | Share the report and slide artifacts with the teammate | P1 | Not started | — | claude.ai | Shared links | Teammate can open both |
 
@@ -743,7 +743,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | ID | Task | Pri | Depends on | Environment | Output | Acceptance |
 |---|---|---|---|---|---|---|
 | T-1 | Onboarding: §15 checklist, then reproduce the test suite and the synthetic results | P0 | — | Laptop | Confirmation in `PROJECT_STATUS.md` | `pytest` passes; `results/tables.md` regenerates identically |
-| T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes) | P0 | P-1, P-3 | Drive access | Short written note | Agreement or a documented disagreement |
+| T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so this now needs a different reviewer; not yet reviewed | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
 | T-3 | Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
 | T-4 | Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
 | T-5 | Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
