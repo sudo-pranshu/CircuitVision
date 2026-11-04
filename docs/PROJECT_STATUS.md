@@ -21,7 +21,7 @@ The pipeline (image → netlist → validation → simulation, plus text → net
 
 ## Final report
 
-The submission report (Word, institute template, 39 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Updated 2026-11-04 with the Gate 1 and 2 decisions, the full-dataset findings, the new defects, the NLP re-run and 129 tests. Every real-CGHD value is highlighted `PENDING: real CGHD run` (§6.3 and a few sentences); the cover's date of submission is also a highlighted placeholder. After the Colab run, the team fills in the pending values by hand from the evidence files (decided 2026-11-04). There is no slide deck.
+The submission report (Word, institute template with 0.75 in margins, 35 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Updated 2026-11-04 with the Gate 1 and 2 decisions, the full-dataset findings, the new defects, the NLP re-run and 129 tests. Every real-CGHD value is highlighted `PENDING: real CGHD run` (§6.3 and a few sentences); the cover's date of submission is also a highlighted placeholder. After the Colab run, the team fills in the pending values by hand from the evidence files (decided 2026-11-04). There is no slide deck.
 
 ## Tested
 

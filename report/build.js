@@ -13,7 +13,9 @@ const {
 const OUT = process.argv[2];
 const PAGES = process.argv[3] && fs.existsSync(process.argv[3]) ? JSON.parse(fs.readFileSync(process.argv[3])) : {};
 const FIG = path.join(__dirname, "fig");
-const TW = 8666;                      // text width in twips (A4 - 1.25in - 1in)
+const TW = 9746;                      // text width in twips (A4 - 2 x 0.75in)
+const BASE = 8666;                    // widths in content.js are written for this text width
+const fit = ws => { const s = ws.map(w => Math.round(w * TW / BASE)); s[s.length - 1] += TW - s.reduce((a, b) => a + b, 0); return s; };
 const FONT = "Times New Roman";
 const MONO = "Courier New";
 
@@ -96,14 +98,15 @@ function caption(kind, n, text) {
       new TextRun({ text: ": ", bold: true }), ...runs(text)],
   });
 }
-function table(key, cap, headers, rows, widths) {
-  const sum = widths.reduce((a, b) => a + b, 0);
-  if (sum !== TW) throw new Error(`table ${key} widths sum ${sum} != ${TW}`);
+function table(key, cap, headers, rows, widths0) {
+  const sum = widths0.reduce((a, b) => a + b, 0);
+  const widths = fit(widths0);
+  if (sum !== BASE) throw new Error(`table ${key} widths sum ${sum} != ${TW}`);
   return [caption("Table", tabNum[key], cap), new Table({
     width: { size: TW, type: WidthType.DXA }, columnWidths: widths,
     rows: [new TableRow({ tableHeader: true, children: headers.map((h, i) => cell(h, widths[i], true)) }),
       ...rows.map(r => new TableRow({ children: r.map((c, i) => cell(c, widths[i], false)) }))],
-  }), new Paragraph({ spacing: { after: 40, line: 240 }, children: [] })];
+  }), Object.assign(new Paragraph({ spacing: { after: 40, line: 240 }, children: [] }), { spacer: true })];
 }
 
 // ---------- figures ----------
@@ -218,10 +221,10 @@ const prelim = [];
 prelim.push(prelimHeading("Certificate", "Certificate"), ...blocks(C.prelim.certificate), ...sigLine(M.guide, "Project Guide"), ...datePlace);
 prelim.push(prelimHeading("Declaration", "Declaration"), ...blocks(C.prelim.declaration));
 prelim.push(new Paragraph({ spacing: { before: 600 }, children: [] }));
-prelim.push(new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: [3600, 2200, 2866],
+prelim.push(new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: fit([3600, 2200, 2866]),
   rows: [["Name", "Roll Number", "Signature"], ...M.students.map(s => [...s, ""])].map((r, i) => new TableRow({
     height: { value: i ? 700 : 400, rule: "atLeast" },
-    children: r.map((c, j) => cell(c, [3600, 2200, 2866][j], i === 0)) })) }));
+    children: r.map((c, j) => cell(c, fit([3600, 2200, 2866])[j], i === 0)) })) }));
 prelim.push(...datePlace);
 prelim.push(prelimHeading("Acknowledgement", "Acknowledgement"), ...blocks(C.prelim.ack));
 M.students.forEach(([n, r], i) => prelim.push(new Paragraph({ alignment: AlignmentType.RIGHT,
@@ -230,8 +233,8 @@ prelim.push(prelimHeading("Abstract", "Abstract"), ...blocks(C.prelim.abstract))
 prelim.push(new Paragraph({ spacing: { before: 200 }, alignment: AlignmentType.JUSTIFIED, children: [
   new TextRun({ text: "Keywords: ", bold: true }),
   new TextRun({ text: "hand-drawn circuit recognition, YOLOv8, image processing, wire tracing, OCR, SPICE netlist, context-free grammar, Earley parser, hidden Markov model, ngspice", italics: true })] }));
-const abbrevTable = new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: [1800, 6866],
-  rows: C.abbrev.map(([a, b]) => new TableRow({ children: [cell(`**${a}**`, 1800, false), cell(b, 6866, false)] })) });
+const abbrevTable = new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: fit([1800, 6866]),
+  rows: C.abbrev.map(([a, b]) => new TableRow({ children: [cell(`**${a}**`, fit([1800, 6866])[0], false), cell(b, fit([1800, 6866])[1], false)] })) });
 
 for (const name of ["List of Figures", "List of Tables", "List of Abbreviations"])
   tocEntries.push({ level: 1, text: name, key: name });
@@ -258,6 +261,7 @@ C.appendices.forEach(([title, bl], i) => {
   main.push(h1(title, runOn));
   main.push(...blocks(bl));
 });
+while (main.length && main[main.length - 1].spacer) main.pop();   // no blank page after the last table
 for (const b of allBlocks) {
   if (b[0] === "fig") lofEntries.push({ level: 1, text: `Figure ${figNum[b[3]]}: ${subst(b[4])}`, key: `Figure ${figNum[b[3]]}:` });
   if (b[0] === "table") lotEntries.push({ level: 1, text: `Table ${tabNum[b[1]]}: ${subst(b[2])}`, key: `Table ${tabNum[b[1]]}:` });
@@ -274,7 +278,7 @@ const finalLists = [centeredTitle("Table of Contents"), ...fieldBlock(1, tocEntr
 
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER,
   children: [new TextRun({ children: [PageNumber.CURRENT], size: 22 })] })] });
-const page = { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800, footer: 600 } };
+const page = { size: { width: 11906, height: 16838 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080, footer: 450 } };
 
 const doc = new Document({
   creator: M.students.map(s => s[0]).join(", "), title: "CircuitVision Mini Project Report",
