@@ -25,7 +25,7 @@ Only `C137` has no out-of-scope parts. That makes it the only circuit where a co
 
 Write what a perfect two-terminal pipeline should produce from the drawing.
 
-- **First line:** `* <circuit>_<drawing>` as a title, then `* by <your name>, <date>`.
+- **First line:** `* <circuit>_<drawing>` as a title. The second line says who wrote it and who checked it against the photo, with dates.
 - **In-scope parts:** resistor (`R`), capacitor (`C`), inductor (`L`), DC source or battery (`V`), diode, LED or Zener (`D`).
 - **Values:** as written on the drawing, in SPICE form: `4k7` → `4.7k`, `10µF` → `10u`, `9V` → `DC 9`. With no value written, use the default: `1k`, `1u`, `1m`, `DC 5`.
 - **Polarity:** `V` and `D` list the + or anode node first: `V1 1 0 DC 9`, `D1 3 4 DMOD`. Add `.model DMOD D` if there is a diode.
