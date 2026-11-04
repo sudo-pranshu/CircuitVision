@@ -63,7 +63,7 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 | 1 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
 | 2 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
 | 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
-| 4 | Someone other than Pawan | Independent review of the Gate 1 and Gate 2 evidence (T-2); Pawan decided both gates. No reviewer is recorded yet. |
+| 4 | Done | Independent review of the Gate 1 and Gate 2 evidence (T-2): Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)). |
 | 5 | Teammate | Write the drafter-12 reference netlists (T-3). After step 3, check the report's numbers against `results/` and the evidence zip (T-5). |
 
 ## Commands

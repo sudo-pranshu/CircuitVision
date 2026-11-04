@@ -753,7 +753,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | ID | Task | Pri | Depends on | Environment | Output | Acceptance |
 |---|---|---|---|---|---|---|
 | T-1 | Done by Pawan, 2026-11-02. Onboarding: §15 checklist, then reproduce the test suite and the synthetic results | P0 | — | Laptop | Confirmation in `PROJECT_STATUS.md` | `pytest` passes; `results/tables.md` regenerates identically |
-| T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so this now needs a different reviewer; not yet reviewed | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
+| T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so a different reviewer was needed. Done: Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)) | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
 | T-3 | Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
 | T-4 | Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
 | T-5 | Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
