@@ -753,12 +753,12 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | ID | Task | Pri | Depends on | Environment | Output | Acceptance |
 |---|---|---|---|---|---|---|
 | T-1 | Done by Pawan, 2026-11-02. Onboarding: §15 checklist, then reproduce the test suite and the synthetic results | P0 | — | Laptop | Confirmation in `PROJECT_STATUS.md` | `pytest` passes; `results/tables.md` regenerates identically |
-| T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so this now needs a different reviewer; not yet reviewed | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
+| T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so a different reviewer was needed. Done: Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)) | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
 | T-3 | Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
 | T-4 | Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
 | T-5 | Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
 | T-6 | Reproducibility check: re-run `report_tables` from the evidence zip on a clean machine | P1 | P-5 | Laptop | Identical `tables.md` | Diff is empty |
-| T-7 | Write 10–20 more hand-written NLP sentences as a new frozen set, before anyone looks at errors | P2 | — | Laptop | `nlp/data/<name>.jsonl` | Annotated like the existing sets; evaluated once |
+| T-7 | Done by Pawan, 2026-11-04: `handwritten_pawan.jsonl`, exact 0.75 (§12). Write 10–20 more hand-written NLP sentences as a new frozen set, before anyone looks at errors | P2 | — | Laptop | `nlp/data/<name>.jsonl` | Annotated like the existing sets; evaluated once |
 
 ---
 
@@ -773,6 +773,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | NLP, 30-sentence baseline | 2026-10-23 | `11fd6e7` | `handwritten_eval.jsonl` | HMM + parser | CPU | Token accuracy 0.986, exact 0.800, component F1 0.965 | [`results/nlp_eval_baseline.md`](../results/nlp_eval_baseline.md) | HAND-WRITTEN |
 | NLP, 30-sentence after changes | 2026-10-23 | `fdc275c` | Same set | — | CPU | Exact 1.000 (**optimistic**: same errors were fixed) | [`results/nlp_eval.md`](../results/nlp_eval.md) | HAND-WRITTEN |
 | NLP, fresh 20-sentence set | 2026-10-23 | `db1385f` | `handwritten_fresh.jsonl` | — | CPU | Token accuracy 1.000, exact 0.900, component F1 0.972; failures: "330R", "a pair of" | [`results/nlp_eval_fresh.md`](../results/nlp_eval_fresh.md) | HAND-WRITTEN |
+| NLP, Pawan's 20-sentence set (T-7) | 2026-11-04 | `0dda609` | `handwritten_pawan.jsonl` | — | CPU | Token accuracy 0.994, exact 0.750, component F1 0.986, netlists valid 1.000; failures: "across both of them", "through", a parallel group before "connected in series with", "in parallel across the LED", "across the second resistor" | [`results/nlp_eval_pawan.md`](../results/nlp_eval_pawan.md) | HAND-WRITTEN |
 | NLP synthetic corpus | 2026-10-23 | `fdc275c` | Test split from the training templates; separate held-out phrasings | — | CPU | Same templates: token accuracy 1.000, exact 1.000. Held-out phrasings: token accuracy 0.897, exact 0.980. | [`results/nlp_synthetic.txt`](../results/nlp_synthetic.txt) | SYNTHETIC |
 | Orientation, OCR, topology on real photos | — | — | CGHD drafter 12 | — | — | — | — | **UNTESTED** |
 

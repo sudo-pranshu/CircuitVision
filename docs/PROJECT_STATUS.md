@@ -31,6 +31,7 @@ The submission report (Word, institute template, 47 pages) is built from [`repor
 | Wire tracing, 11 photo conditions | 0.994 exact topology | SYNTHETIC |
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
 | Text → netlist, fresh 20 sentences (evaluated once) | 0.90 exact circuit | HAND-WRITTEN |
+| Text → netlist, Pawan's 20 sentences (T-7, evaluated once) | 0.75 exact circuit, component F1 0.986 | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
 
 ## Reproduced by the teammate (T-1, 2026-11-02)
@@ -63,7 +64,7 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 | 1 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
 | 2 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
 | 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
-| 4 | Someone other than Pawan | Independent review of the Gate 1 and Gate 2 evidence (T-2); Pawan decided both gates. No reviewer is recorded yet. |
+| 4 | Done | Independent review of the Gate 1 and Gate 2 evidence (T-2): Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)). |
 | 5 | Teammate | Write the drafter-12 reference netlists (T-3). After step 3, check the report's numbers against `results/` and the evidence zip (T-5). |
 
 ## Commands

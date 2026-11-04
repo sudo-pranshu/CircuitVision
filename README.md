@@ -18,6 +18,7 @@ text ─► tokenize ─► HMM tagger (Viterbi) ─► chunking + series/parall
 |---|---|---|
 | Wire tracing on synthetic photos with known graphs (11 conditions) | 0.994 exact topology | `results/synthetic_topology.json` |
 | Text → netlist, fresh 20-sentence test set (evaluated once) | 0.90 exact circuit, 1.00 token accuracy | `results/nlp_eval_fresh.json` |
+| Text → netlist, teammate's 20-sentence test set (evaluated once) | 0.75 exact circuit, 0.99 token accuracy | `results/nlp_eval_pawan.json` |
 | Text → netlist, 30-sentence set (before → after development) | 0.80 → 1.00 exact (after is optimistic) | `results/nlp_eval*.json` |
 
 All tables: `results/tables.md`, regenerated with `python -m circuitvision.report_tables`.
