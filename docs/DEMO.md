@@ -21,7 +21,7 @@ cd ~/Developer/CircuitVision
 .venv/bin/python -m circuitvision.app --weights runs/baseline_v1/best.pt --orient experiments/baseline_v1/models
 ```
 
-Open http://localhost:7860. Add `--no-ocr` if EasyOCR misbehaves, or `--share` to get a public link for a projector on another machine.
+Open http://localhost:7860. To take photos with a phone, add `--lan` and open the address it prints (`http://<laptop-ip>:7860`) on a phone on the same Wi-Fi; in the Photo tab, tap the image box and choose Take Photo. Add `--no-ocr` if EasyOCR misbehaves, or `--share` to get a public link for a projector on another machine.
 
 ## Flow
 

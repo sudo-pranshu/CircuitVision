@@ -1,6 +1,6 @@
 """Demo UI: a photo of a hand-drawn circuit, or a sentence, in; a SPICE netlist out.
 
-  python -m circuitvision.app --weights runs/baseline_v1/best.pt [--orient models] [--no-ocr] [--share]
+  python -m circuitvision.app --weights runs/baseline_v1/best.pt [--orient models] [--no-ocr] [--lan] [--share]
 
 Without --weights only the text tab works. Every report says what was assumed or
 uncertain, so a guess is never presented as the user's circuit.
@@ -156,8 +156,28 @@ def main():
     ap.add_argument("--no-ocr", action="store_true")
     ap.add_argument("--orient", help="folder with orientation models")
     ap.add_argument("--share", action="store_true", help="public link for demos")
+    ap.add_argument("--lan", action="store_true",
+                    help="also serve on this computer's Wi-Fi address, so a phone on the same network can open it")
+    ap.add_argument("--port", type=int, default=7860)
     a = ap.parse_args()
-    build_ui(a.weights, not a.no_ocr, a.orient).launch(share=a.share)
+    if a.lan:
+        print(f"\n  On your phone (same Wi-Fi), open:  http://{lan_ip()}:{a.port}\n"
+              "  In the Photo tab, tap the image box and choose Take Photo.\n", flush=True)
+    build_ui(a.weights, not a.no_ocr, a.orient).launch(
+        share=a.share, server_port=a.port, server_name="0.0.0.0" if a.lan else None)
+
+
+def lan_ip() -> str:
+    """This computer's address on the local network (no packets are sent)."""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("10.255.255.255", 1))
+        return s.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        s.close()
 
 
 if __name__ == "__main__":
