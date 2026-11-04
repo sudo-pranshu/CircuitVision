@@ -21,7 +21,7 @@ cd ~/Developer/CircuitVision
 .venv/bin/python -m circuitvision.app --weights runs/baseline_v1/best.pt --orient experiments/baseline_v1/models
 ```
 
-Open http://localhost:7860. To take photos with a phone, add `--lan` and open the address it prints (`http://<laptop-ip>:7860`) on a phone on the same Wi-Fi; in the Photo tab, tap the image box and choose Take Photo. Add `--no-ocr` if EasyOCR misbehaves, or `--share` to get a public link for a projector on another machine.
+Open http://localhost:7860. To take photos with a phone, add `--lan`. On the laptop, click **📱 Upload from mobile** under the image box and scan the QR code with a phone on the same Wi-Fi. On the phone, tap the box, choose **Take Photo**, then **Send to laptop**: the photo and its result appear on the laptop page by themselves. Install the QR library once with `pip install -e ".[app]"` (adds `segno`). Add `--no-ocr` if EasyOCR misbehaves, or `--share` to get a public link for a projector on another machine.
 
 ## Flow
 
