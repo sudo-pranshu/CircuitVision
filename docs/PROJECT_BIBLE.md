@@ -116,7 +116,7 @@ For each input (photo or sentence):
 - the ngspice DC operating point;
 - for photos, an overlay image with each net coloured.
 
-A Gradio web demo wraps the image path ([`src/circuitvision/app.py`](../src/circuitvision/app.py)). The academic deliverables are the report, the slides and the evidence bundle from the real experiment.
+A Gradio web demo wraps the image path ([`src/circuitvision/app.py`](../src/circuitvision/app.py)). The academic deliverables are the report and the evidence bundle from the real experiment, plus a live demo ([`DEMO.md`](DEMO.md)). No slide deck will be presented (decided 2026-11-04).
 
 ### 1.8 Scope
 
@@ -718,8 +718,8 @@ Status as of `29f08a4`. Passing unit tests is **not** a real-photo result.
 | NLP evaluation | COMPLETE | Fresh set 0.90 exact (HAND-WRITTEN, 20 sentences) |
 | Gradio application | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Handler exercised with a synthetic model; needs real weights |
 | Final report | IN PROGRESS | Word report in the institute template is built from `report/`; real-results section 6.3 is pending |
-| Presentation | IN PROGRESS | 14 slides; the status/results rows are pending |
-| Final demonstration | NOT STARTED | Needs real weights from the Colab run |
+| Presentation | NOT NEEDED | No slide deck will be presented (decided 2026-11-04) |
+| Final demonstration | READY EXCEPT WEIGHTS | Script in [`DEMO.md`](DEMO.md); app checked on 2026-11-04 (starts, serves, processes a photo); needs `best.pt` and `models/` from Drive |
 
 ---
 
@@ -736,14 +736,14 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | P-3 | Gate 2: inspect all 24 overlays | P0 | Done by Pawan, 2026-11-02, on the local conversion. Confirm the overlays in the Colab gate cell | P-2 | Mac, then Colab | `gates/gate2.json` | Every box sits on its symbol, including the EXIF-tagged images |
 | P-4 | Let training finish (Run all again after any disconnect) | P0 | Ready: label fixes merged in PR #5; no run recorded yet | P-3 | Colab T4, about 3–5 h | `runs/train/weights/best.pt`, `results.csv` | `train_config.json` has `"completed": true` |
 | P-5 | Run test and downstream evaluation, then download the evidence zip | P0 | Blocked | P-4 | Colab | `baseline_v1_evidence.zip` | `tables.md` shows REAL CGHD tables |
-| P-6 | Share the report and slide artifacts with the teammate | P1 | Not started | — | claude.ai | Shared links | Teammate can open both |
+| P-6 | Share the report and slide artifacts with the teammate (slides no longer needed) | P1 | Not started | — | claude.ai | Shared links | Teammate can open both |
 
 ### 11.2 Tasks Claude can perform
 
 | ID | Task | Pri | Depends on | Output | Acceptance |
 |---|---|---|---|---|---|
 | C-1 | Review the Gate 1 evidence and recommend a convention | P0 | P-1 | Written recommendation citing the sheets and loader | Owner approves or overrides |
-| C-2 | Fill the report's §6.3 (and other PENDING markers in `report/content.js`), the slides and `EXPERIMENTS.md` from the evidence zip, then rebuild | P0 | P-5 | Updated report, deck and docs | Every number traceable to a file in the zip |
+| C-2 | Update `EXPERIMENTS.md` and the docs from the evidence zip. The report's §6.3 and other PENDING values are filled in by hand by the team (decided 2026-11-04); there are no slides | P0 | P-5 | Updated report, deck and docs | Every number traceable to a file in the zip |
 | C-3 | Error analysis of detector and downstream failures on drafter 12 | P1 | P-5 | Report section and figures | Uses `test/qualitative/` and `downstream/*.csv` |
 | C-4 | Support for reference netlists stored in the repo for drafter 12 (from T-3) | P1 | T-3 | Small change in `evaluate.py` plus a test | Real `topology_match` reported where references exist |
 | C-5 | Bug fixes and regression tests for anything the real run exposes | P0 | P-1…P-5 | PRs | `pytest` green; the fix is tested |
@@ -755,7 +755,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | T-1 | Done by Pawan, 2026-11-02. Onboarding: §15 checklist, then reproduce the test suite and the synthetic results | P0 | — | Laptop | Confirmation in `PROJECT_STATUS.md` | `pytest` passes; `results/tables.md` regenerates identically |
 | T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so a different reviewer was needed. Done: Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)) | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
 | T-3 | Done 2026-11-04: all 12 drafter-12 drawings with in-scope parts (C133–C138, D1 and D2; C139–C144 are logic gates). Drafted by Claude from the photos without running the pipeline, then checked against the photos by Pawan. Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
-| T-4 | Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
+| T-4 | Done 2026-11-04: the related-work section is report Chapter 2 (§2.1–2.7); sources reviewed by Pawan. Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
 | T-5 | Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
 | T-6 | Reproducibility check: re-run `report_tables` from the evidence zip on a clean machine | P1 | P-5 | Laptop | Identical `tables.md` | Diff is empty |
 | T-7 | Done by Pawan, 2026-11-04: `handwritten_pawan.jsonl`, exact 0.75 (§12). Write 10–20 more hand-written NLP sentences as a new frozen set, before anyone looks at errors | P2 | — | Laptop | `nlp/data/<name>.jsonl` | Annotated like the existing sets; evaluated once |
@@ -787,7 +787,8 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 |---|---|---|---|
 | Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 47 pages | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
 | Earlier report draft | Claude Docs artifact, private: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn | Superseded by the Word report | — |
-| Slide deck (14 slides) | Claude Slides artifact, private until shared: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD | Written | "status" slide rows marked pending; detection slide numbers |
+| Slide deck (14 slides) | Claude Slides artifact: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD | Not presented (decided 2026-11-04) | — |
+| Live demo | [`DEMO.md`](DEMO.md) | Ready except the trained weights | `best.pt` and `models/` from Drive |
 | Results tables | [`results/tables.md`](../results/tables.md) (synthetic); `experiments/baseline_v1/tables.md` (real, after the run) | Generated | The REAL section reads NOT AVAILABLE until the run |
 | Experiment protocol | [`EXPERIMENTS.md`](../EXPERIMENTS.md) | Current | "Results: baseline_v1" section |
 
