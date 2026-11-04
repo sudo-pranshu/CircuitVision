@@ -13,7 +13,7 @@ Every result carries one of three labels: **REAL CGHD**, **SYNTHETIC/CONTROLLED*
 | Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90; Pawan's 20-sentence set (T-7) 0.75 | CONTROLLED (hand-written) | `results/nlp_eval*.json` |
 | `train.py`, `detector_eval.py`, `evaluate.py --weights --ocr`, `orientation.py`, `report_tables.py` | Executed end to end on CPU (torch 2.14, ultralytics 8.4.184) | Synthetic data only; numbers carry no meaning about real photos |
 | CGHD audit, rotation convention (`PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`), label overlays | REAL CGHD (dataset checks, no model metric) | Run locally on the MD5-checked v14 zip, 2026-11-02; Gates 1 and 2 approved by Pawan. See the findings below |
-| YOLOv8s detection on test drafter 12 | UNTESTED | Awaiting the Colab run |
+| YOLOv8s detection on test drafter 12 | UNTESTED | Training in progress on Colab (epoch 20/100 on 2026-11-04); tested on drafter 12 after it finishes |
 | Downstream stages on real photos (GT boxes / detector) | UNTESTED | Awaiting the Colab run |
 
 No REAL CGHD metric exists yet, and nothing here may be reported as a real-photo result until `baseline_v1` has run.

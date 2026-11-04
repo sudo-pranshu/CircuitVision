@@ -695,7 +695,7 @@ Three early commits (`7012c16`, `d6069ef`, `bc76e79`) carry a different author n
 
 ## 10. Current status
 
-Status as of `29f08a4`. Passing unit tests is **not** a real-photo result.
+Status as of `5a0d825` (2026-11-04). Passing unit tests is **not** a real-photo result.
 
 | Item | Status | Evidence |
 |---|---|---|
@@ -707,7 +707,7 @@ Status as of `29f08a4`. Passing unit tests is **not** a real-photo result.
 | Annotation verification | COMPLETE | Full-dataset audit and Gate 2 overlays; found the placeholder XML sizes, now fixed |
 | Rotation convention | COMPLETE | Gate 1 decided by Pawan, 2026-11-02: `PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`, plus the `voltage.dc` correction |
 | Label conversion | COMPLETE | Gate 2 decided by Pawan, 2026-11-02, after the placeholder-size fix |
-| YOLO training | NOT STARTED | Label fixes merged in PR #5. Ready for a Colab T4 run, and none is recorded in the repository; config fixed in `train.BASELINE` |
+| YOLO training | IN PROGRESS | Colab T4, 100 epochs, config fixed in `train.BASELINE`; at epoch 20/100 on 2026-11-04 (validation monitoring only, not a result) |
 | Detector evaluation | BLOCKED | Waits on training; tooling tested on synthetic data |
 | Orientation evaluation | BLOCKED | Gate 1 is decided; waits on the Colab run. SYNTHETIC: 5/5 on held-out synthetic drafter 12. |
 | Topology evaluation | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | SYNTHETIC: 0.994 exact over 11 conditions. Real topology can only be measured through proxies until hand-made reference netlists exist. |
@@ -734,7 +734,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | P-1 | Run the audit and rotation sheets | P0 | Done by Pawan on a Mac, 2026-11-02; the Colab run repeats it | — | Mac, then Colab + Drive | `audit/`, `rotation_check/` | Audit and rotation sheets done |
 | P-2 | Gate 1: decide `PLUS_AT_0` and `CGHD_CLOCKWISE` from the real sheets and `dataset_docs/` | P0 | Done by Pawan, 2026-11-02: `left`, `False`. Enter the same values in the Colab gate cell | P-1 | Mac, then Colab | `gates/gate1.json` | Values set, with notes |
 | P-3 | Gate 2: inspect all 24 overlays | P0 | Done by Pawan, 2026-11-02, on the local conversion. Confirm the overlays in the Colab gate cell | P-2 | Mac, then Colab | `gates/gate2.json` | Every box sits on its symbol, including the EXIF-tagged images |
-| P-4 | Let training finish (Run all again after any disconnect) | P0 | Ready: label fixes merged in PR #5; no run recorded yet | P-3 | Colab T4, about 3–5 h | `runs/train/weights/best.pt`, `results.csv` | `train_config.json` has `"completed": true` |
+| P-4 | Let training finish (Run all again after any disconnect) | P0 | In progress: epoch 20/100 on 2026-11-04 | P-3 | Colab T4, about 3–5 h | `runs/train/weights/best.pt`, `results.csv` | `train_config.json` has `"completed": true` |
 | P-5 | Run test and downstream evaluation, then download the evidence zip | P0 | Blocked | P-4 | Colab | `baseline_v1_evidence.zip` | `tables.md` shows REAL CGHD tables |
 | P-6 | Share the report and slide artifacts with the teammate (slides no longer needed) | P1 | Not started | — | claude.ai | Shared links | Teammate can open both |
 
