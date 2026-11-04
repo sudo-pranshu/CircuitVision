@@ -10,7 +10,7 @@ Every result carries one of three labels: **REAL CGHD**, **SYNTHETIC/CONTROLLED*
 | Wire tracing on synthetic photos with known graphs: 0.994 exact over 11 conditions | SYNTHETIC/CONTROLLED | `results/synthetic_topology.json` |
 | GT-box pipeline on CGHD-shaped synthetic data: 18/18 topology, exact and operating-point match | SYNTHETIC/CONTROLLED | Run log below; reproducible with `synth --write-cghd` |
 | EasyOCR on synthetic value labels: 0.914 exact, 0.950 character accuracy | SYNTHETIC/CONTROLLED | Same run |
-| Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90 | CONTROLLED (hand-written) | `results/nlp_eval*.json` |
+| Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90; Pawan's 20-sentence set (T-7) 0.75 | CONTROLLED (hand-written) | `results/nlp_eval*.json` |
 | `train.py`, `detector_eval.py`, `evaluate.py --weights --ocr`, `orientation.py`, `report_tables.py` | Executed end to end on CPU (torch 2.14, ultralytics 8.4.184) | Synthetic data only; numbers carry no meaning about real photos |
 | CGHD audit, rotation convention (`PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`), label overlays | REAL CGHD (dataset checks, no model metric) | Run locally on the MD5-checked v14 zip, 2026-11-02; Gates 1 and 2 approved by Pawan. See the findings below |
 | YOLOv8s detection on test drafter 12 | UNTESTED | Awaiting the Colab run |

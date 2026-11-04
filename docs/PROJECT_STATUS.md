@@ -31,6 +31,7 @@ The submission report (Word, institute template, 47 pages) is built from [`repor
 | Wire tracing, 11 photo conditions | 0.994 exact topology | SYNTHETIC |
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
 | Text → netlist, fresh 20 sentences (evaluated once) | 0.90 exact circuit | HAND-WRITTEN |
+| Text → netlist, Pawan's 20 sentences (T-7, evaluated once) | 0.75 exact circuit, component F1 0.986 | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
 
 ## Reproduced by the teammate (T-1, 2026-11-02)
