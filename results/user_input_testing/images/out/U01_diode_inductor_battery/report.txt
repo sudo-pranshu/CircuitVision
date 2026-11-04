@@ -1,0 +1,22 @@
+Detected 5 parts, 6 junctions, 0 crossovers, 1 labels.
+  voltage_source  confidence 0.78
+  resistor        confidence 0.81
+  capacitor       confidence 0.86
+  inductor        confidence 0.89
+  diode           confidence 0.90
+
+Validation: OK
+
+Check before trusting this netlist:
+  - L1: no value label was read; the default 1m was used.
+  - C1: no value label was read; the default 1u was used.
+  - R1: no value label was read; the default 1k was used.
+  - V1 = 45: read from a handwritten label by OCR; check it against the drawing (e.g. a '+' is easily read as '4').
+  - No ground symbol: ground was chosen automatically (implicit: first source, second terminal).
+
+DC operating point (ngspice):
+  v(1) = 45
+  v(2) = 0
+  v(3) = -7.323e-29
+  l1#branch = -7.323e-32
+  v1#branch = 0

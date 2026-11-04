@@ -65,7 +65,7 @@ Source polarity is always + on node 1, and ground is the − terminal. **The 3 w
 
 | What | Status |
 |---|---|
-| Real user photos (hand-drawn, photographed) | **0 tested.** None available. The runner and a 10-case plan (divider, series, parallel, series-parallel, diode, capacitor, several junctions, crossing wires, grid paper, uneven light) are ready in `results/user_input_testing/images/`. |
+| Real user photos (hand-drawn, photographed) | **2 tested** (`results/user_input_testing/images/`): U01 on plain paper is reconstructed with the correct topology after the faint-wire fix ("+5V" misread as "45V" by OCR); U02 on ruled notebook paper fails, because the ruling is traced as wires and the AC source is out of scope. A scanned figure from a published paper was also tried and failed (AC read as DC, diode missed); it is not stored, because it is third-party material. The 10-case plan remains open. |
 | App with the real model, CGHD test photos (sanity check, **not** user input) | 2 photos, [`results/user_input_testing/app_sanity_cghd/`](../results/user_input_testing/app_sanity_cghd/) |
 
 **Sanity check.** These are drafter-12 benchmark photos, so they don't count as user tests.

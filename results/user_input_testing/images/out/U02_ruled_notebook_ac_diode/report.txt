@@ -1,0 +1,16 @@
+Detected 4 parts, 4 junctions, 1 crossovers, 0 labels.
+  gnd             confidence 0.51
+  capacitor       confidence 0.85
+  resistor        confidence 0.88
+  inductor        confidence 0.89
+
+Validation: FAILED
+  node 0 is floating (1 connection)  (a wire end connects to only one part: a wire gap, or a part whose terminals were not found)
+  node 3 is floating (1 connection)  (a wire end connects to only one part: a wire gap, or a part whose terminals were not found)
+
+Check before trusting this netlist:
+  - R1 was left out: 3 wire ends were found at it instead of 2.
+  - C1 was left out: 3 wire ends were found at it instead of 2.
+  - L1: no value label was read; the default 1m was used.
+
+Simulation: skipped, because the netlist is not valid.

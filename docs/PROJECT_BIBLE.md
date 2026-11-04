@@ -724,7 +724,7 @@ Status as of 2026-11-04, after the baseline_v1 run. Passing unit tests is **not*
 | ngspice simulation | COMPLETE | Unit-tested; operating points match references on synthetic data |
 | NLP evaluation | COMPLETE | Fresh set 0.90 and Pawan's set 0.75 exact (HAND-WRITTEN, 20 sentences each, evaluated once). Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), Pawan's unchanged |
 | Gradio application | REAL-MODEL VERIFIED, USER PHOTOS UNTESTED | Photo and Text tabs; runs with baseline_v1 weights and reproduces the Colab netlists; reports confidences, dropped parts, defaults and double labels. No real user photo tested yet (USER_INPUT_TESTING.md) |
-| Final report | IN PROGRESS | Word report (35 pages, compact layout, 0.75 in margins) built from `report/`; updated 2026-11-04 with the gate decisions, dataset findings, new defects and NLP re-run. Real-results §6.3 is pending and is filled in by hand by the team |
+| Final report | COMPLETE | `report/CircuitVision_Mini_Project_Report.pdf` (46 pages, 2026-11-04): real baseline_v1 results in §6.3, user-input testing in §6.4, Gate 1 sheets and Gate 2 overlays |
 | Presentation | NOT NEEDED | No slide deck will be presented (decided 2026-11-04) |
 | Final demonstration | READY EXCEPT WEIGHTS | Script in [`DEMO.md`](DEMO.md); app checked on 2026-11-04 (starts, serves, processes a photo); needs `best.pt` and `models/` from Drive |
 

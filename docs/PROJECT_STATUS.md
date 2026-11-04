@@ -88,7 +88,8 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 
 See [`USER_INPUT_TESTING.md`](USER_INPUT_TESTING.md).
 - **Text:** 20 typed descriptions through the real CLI. 12 of 15 with a definite answer are electrically correct. Three sentence structures still give valid but wrong circuits. Missing values and invalid input are now reported instead of guessed.
-- **Images:** **no real user photo tested yet.** The app runs with the real model on this Mac and reproduces the Colab netlists (CGHD sanity check only).
+- **Images:** 2 real user photos. A hand-drawn circuit on plain paper is reconstructed correctly after a faint-wire fix; one on ruled paper fails. The app runs with the real model and reproduces the Colab netlists.
+- **Final report:** `report/CircuitVision_Mini_Project_Report.pdf` (46 pages) with the real results (§6.3), user testing (§6.4) and the Gate 1 and Gate 2 figures; built 2026-11-04.
 - **App:** a Text tab, it starts without weights, and the photo report shows confidences, dropped parts, defaulted values and double-labelled symbols. Overlay labels are readable.
 
 ## Not tested

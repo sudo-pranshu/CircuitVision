@@ -1,0 +1,17 @@
+[
+ {
+  "id": "U01_diode_inductor_battery",
+  "image": "U01_diode_inductor_battery.png",
+  "reference": true,
+  "valid": true,
+  "topology_match": true,
+  "exact_match": false,
+  "op_match": false
+ },
+ {
+  "id": "U02_ruled_notebook_ac_diode",
+  "image": "U02_ruled_notebook_ac_diode.jpg",
+  "reference": false,
+  "valid": false
+ }
+]
