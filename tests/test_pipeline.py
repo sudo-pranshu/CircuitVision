@@ -76,3 +76,10 @@ def test_spice_output():
     out = netlist.to_spice(comps)
     assert "R1" in out and "V1" in out and out.strip().endswith(".end")
     assert "WARNING" not in out
+
+
+def test_trailing_r_value_reaches_a_resistor():
+    # BS 1852 "330R" = 330 ohm; previously unparsed, so the label was never attached
+    from circuitvision.netlist import parse_value
+    assert parse_value("330R") == ("330", "resistor")
+    assert parse_value("4R7") == ("4.7", None) and parse_value("R1") == (None, None)

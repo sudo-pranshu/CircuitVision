@@ -3,7 +3,8 @@
 1. Chunking: each component noun takes the nearest free value on its left
    (no other noun in between), else the nearest on its right. UNIT tokens are
    glued onto the value before them ("4.7" + "k" -> "4.7k"). A count word
-   directly before a valued plural noun ("two 1k resistors") repeats it.
+   ("two 1k resistors") or "a pair of" directly before a valued plural noun
+   repeats it.
    Values no noun claimed still imply a component (unseen nouns: "a 10k res").
 2. Structure, from the outside in:
    - parentheses group explicitly:  "A in series with (B in parallel with C)"
@@ -64,7 +65,8 @@ def chunk(words, tags):
             value = spice_value(pick[2], cls)
         copies = 1
         if pick and pick[0] < n and pick[0] > 0 and words[n].lower().endswith("s"):
-            copies = COUNTS.get(words[pick[0] - 1].lower(), 1)      # "two 1k resistors"
+            before = [w.lower() for w in words[max(0, pick[0] - 2):pick[0]]]
+            copies = 2 if before == ["pair", "of"] else COUNTS.get(before[-1], 1)   # "two 1k resistors", "a pair of"
         for k in range(copies):
             items.append(("ENT", cls, value, n + k / 10))
     # Back-off: a value no noun claimed still implies a component, if it is a value

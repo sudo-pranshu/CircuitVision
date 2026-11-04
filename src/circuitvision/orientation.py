@@ -4,9 +4,11 @@ Convention inside CircuitVision:
   rotation is in degrees counter-clockwise, one of 0/90/180/270, and at
   rotation 0 the positive terminal (anode, or + of a source) is on PLUS_AT_0.
 
-CGHD stores a rotation per symbol. The defaults below are UNVERIFIED
-assumptions. After inspecting the rotation sheets (Gate 1 in EXPERIMENTS.md),
-set the verified values without editing code:
+CGHD stores a rotation per symbol. The defaults below (left, counter-clockwise)
+are the Gate 1 decision, read from the real rotation sheets of CGHD v14 on
+2026-11-02 and reviewed on 2026-11-04 (EXPERIMENTS.md, issue #7). voltage.dc,
+labelled 0 with + on top, is corrected in cghd_to_yolo.parse_voc. To override
+without editing code:
   CIRCUITVISION_PLUS_AT_0=left|right|top|bottom
   CIRCUITVISION_CGHD_CLOCKWISE=0|1
 
@@ -35,7 +37,7 @@ PLUS_AT_0 = os.environ.get("CIRCUITVISION_PLUS_AT_0", "left")
 CGHD_CLOCKWISE = os.environ.get("CIRCUITVISION_CGHD_CLOCKWISE", "0") == "1"
 CONVENTION_SOURCE = ("environment (set after Gate 1)"
                      if {"CIRCUITVISION_PLUS_AT_0", "CIRCUITVISION_CGHD_CLOCKWISE"} & set(os.environ)
-                     else "code default (UNVERIFIED)")
+                     else "code default (Gate 1 decision, 2026-11-02)")
 if PLUS_AT_0 not in SIDES:
     raise ValueError(f"CIRCUITVISION_PLUS_AT_0 must be one of {SIDES}, got {PLUS_AT_0!r}")
 

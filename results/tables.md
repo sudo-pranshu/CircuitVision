@@ -35,3 +35,5 @@ Source: `results/synthetic_topology.json` (exact terminal-net partition; 5 circu
 | 30-sentence set, baseline (before NLP changes) | 30 | 0.986 | 0.975 | 0.800 | 0.965 | 1.000 | `results/nlp_eval_baseline.json` |
 | 30-sentence set, after changes (optimistic: same error categories) | 30 | 0.995 | 0.980 | 1.000 | 1.000 | 1.000 | `results/nlp_eval.json` |
 | fresh 20-sentence set, evaluated once | 20 | 1.000 | 1.000 | 0.900 | 0.972 | 1.000 | `results/nlp_eval_fresh.json` |
+| teammate's 20-sentence set (T-7), evaluated once | 20 | 0.994 | 0.990 | 0.750 | 0.986 | 1.000 | `results/nlp_eval_pawan.json` |
+| fresh set re-run after the 2026-11-04 fixes (optimistic) | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | `results/nlp_rerun_2026-11-04/fresh.json` |
