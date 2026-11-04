@@ -1,0 +1,5 @@
+$ python -m circuitvision.nlp.text2netlist "make me a circuit"
+
+
+[stderr]
+No circuit components were found in that description. Name at least one part, e.g. "a 9V battery driving a 1k resistor in series with a 2k resistor".

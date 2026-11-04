@@ -1,0 +1,13 @@
+$ python -m circuitvision.nlp.text2netlist "12 volts across three 1k resistors in series"
+
+12/VAL volts/UNIT across/O three/O 1k/VAL resistors/RES in/O series/SER 
+
+* 12 volts across three 1k resistors in series
+V1 1 0 DC 12
+R1 1 2 1k
+R2 2 3 1k
+R3 3 0 1k
+.op
+.end
+
+validation: OK

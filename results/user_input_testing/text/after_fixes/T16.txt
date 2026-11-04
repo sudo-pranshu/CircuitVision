@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "a 12V battery in series with a 1000 ohm resistor and a 1 kohm resistor"
+
+a/O 12V/VAL battery/SRC in/O series/SER with/O a/O 1000/VAL ohm/UNIT resistor/RES and/SEP a/O 1/VAL kohm/UNIT resistor/RES 
+
+* a 12V battery in series with a 1000 ohm resistor and a 1 koh
+V1 1 0 DC 12
+R1 1 2 1000
+R2 2 0 1k
+.op
+.end
+
+validation: OK

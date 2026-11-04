@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "a 9V battery and a resistor of 2 megohms in series"
+
+a/O 9V/VAL battery/SRC and/SEP a/O resistor/RES of/O 2/VAL megohms/CAP in/O series/SER 
+
+* a 9V battery and a resistor of 2 megohms in series
+V1 1 0 DC 9
+R1 1 2 2
+C1 2 0 1u
+.op
+.end
+
+validation: OK

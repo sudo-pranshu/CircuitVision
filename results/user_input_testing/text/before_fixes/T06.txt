@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "Put a 4k7 and a 10k resistor in parallel across a 3.3V battery"
+
+Put/O a/O 4k7/VAL and/SEP a/O 10k/VAL resistor/RES in/O parallel/PAR across/O a/O 3.3V/VAL battery/SRC 
+
+* Put a 4k7 and a 10k resistor in parallel across a 3.3V batte
+V1 1 0 DC 3.3
+R1 1 0 4.7k
+R2 1 0 10k
+.op
+.end
+
+validation: OK

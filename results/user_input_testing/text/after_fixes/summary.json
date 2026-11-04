@@ -1,0 +1,311 @@
+[
+ {
+  "id": "T01",
+  "text": "A 9V battery connected to a 1k resistor and a 2k resistor in series.",
+  "note": "divider: I = 3 mA, V(2) = 6 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* A 9V battery connected to a 1k resistor and a 2k resistor in\nV1 1 0 DC 9\nR1 1 2 1k\nR2 2 0 2k\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 9.0,
+   "v(2)": 6.0,
+   "v1#branch": -0.003
+  }
+ },
+ {
+  "id": "T02",
+  "text": "A 12V source connected to two parallel resistors of 2k and 4k.",
+  "note": "I = 6 + 3 = 9 mA",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* A 12V source connected to two parallel resistors of 2k and 4\nV1 1 0 DC 12\nR1 1 2 2k\nR2 2 0 4k\n.op\n.end\n",
+  "topology": false,
+  "exact": false,
+  "op": false,
+  "op_values": {
+   "v(1)": 12.0,
+   "v(2)": 8.0,
+   "v1#branch": -0.002
+  }
+ },
+ {
+  "id": "T03",
+  "text": "A 5V source connected to a 1k resistor in series with a parallel combination of 2k and 3k resistors.",
+  "note": "2k||3k = 1.2k; I = 5/2.2k = 2.273 mA; V(2) = 2.727 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* A 5V source connected to a 1k resistor in series with a para\nV1 1 0 DC 5\nR1 1 0 1k\nR2 1 2 2k\nR3 2 0 3k\n.op\n.end\n",
+  "topology": false,
+  "exact": false,
+  "op": false,
+  "op_values": {
+   "v(1)": 5.0,
+   "v(2)": 3.0,
+   "v1#branch": -0.006
+  }
+ },
+ {
+  "id": "T04",
+  "text": "A diode connected in series with a 470 ohm resistor and a 5V DC source.",
+  "note": "forward-biased diode, about 0.7 V drop",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* A diode connected in series with a 470 ohm resistor and a 5V\nV1 1 0 DC 5\nD1 1 2 DMOD\nR1 2 0 470\n.model DMOD D\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 5.0,
+   "v(2)": 4.287697,
+   "v1#branch": -0.009123
+  }
+ },
+ {
+  "id": "T05",
+  "text": "A 10V supply feeds a 100 ohm resistor, followed by two branches in parallel: one with a 220 ohm and a 330 ohm resistor in series, and the other with a single 1k resistor.",
+  "note": "550||1000 = 354.8; I = 21.99 mA; V(2) = 7.80 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* A 10V supply feeds a 100 ohm resistor, followed by two branc\nV1 1 0 DC 10\nR1 1 0 100\nR2 1 2 220\nR3 2 3 330\nR4 3 0 1k\n.op\n.end\n",
+  "topology": false,
+  "exact": false,
+  "op": false,
+  "op_values": {
+   "v(1)": 10.0,
+   "v(2)": 8.580645,
+   "v(3)": 6.451613,
+   "v1#branch": -0.106452
+  }
+ },
+ {
+  "id": "T06",
+  "text": "Put a 4k7 and a 10k resistor in parallel across a 3.3V battery",
+  "note": "I = 0.702 + 0.33 = 1.032 mA",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* Put a 4k7 and a 10k resistor in parallel across a 3.3V batte\nV1 1 0 DC 3.3\nR1 1 0 4.7k\nR2 1 0 10k\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 3.3,
+   "v1#branch": -0.001032
+  }
+ },
+ {
+  "id": "T07",
+  "text": "12 volts across three 1k resistors in series",
+  "note": "V(2) = 8 V, V(3) = 4 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* 12 volts across three 1k resistors in series\nV1 1 0 DC 12\nR1 1 2 1k\nR2 2 3 1k\nR3 3 0 1k\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 12.0,
+   "v(2)": 8.0,
+   "v(3)": 4.0,
+   "v1#branch": -0.004
+  }
+ },
+ {
+  "id": "T08",
+  "text": "2.2kΩ resistor in series with 0.1uF cap, powered by 6 V",
+  "note": "DC: capacitor open, V(2) = 6 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* 2.2kΩ resistor in series with 0.1uF cap, powered by 6 V\nV1 1 0 DC 6\nR1 1 2 2.2k\nC1 2 0 0.1u\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 6.0,
+   "v(2)": 6.0,
+   "v1#branch": 0.0
+  }
+ },
+ {
+  "id": "T09",
+  "text": "a 1M5 resistor and a 100n capacitor in parallel",
+  "note": "no source given: the tool must not invent one silently",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [
+   "note: No voltage source was described; a default DC 5 V source was placed across the circuit."
+  ],
+  "netlist": "* a 1M5 resistor and a 100n capacitor in parallel\nV1 1 0 DC 5\nR1 1 0 1.5meg\nC1 1 0 100n\n.op\n.end\n"
+ },
+ {
+  "id": "T10",
+  "text": "hook up a 9 volt battery to an LED and a 330 ohm resistor",
+  "note": "informal wording; series implied",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* hook up a 9 volt battery to an LED and a 330 ohm resistor\nV1 1 0 DC 9\nD1 1 2 DMOD\nR1 2 0 330\n.model DMOD D\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 9.0,
+   "v(2)": 8.261552,
+   "v1#branch": -0.025035
+  }
+ },
+ {
+  "id": "T11",
+  "text": "a resistor in series with a capacitor",
+  "note": "no values, no source: defaults must be reported",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [
+   "note: No voltage source was described; a default DC 5 V source was placed across the circuit.",
+   "note: 1 capacitor had no value; the default 1u was used.",
+   "note: 1 resistor had no value; the default 1k was used."
+  ],
+  "netlist": "* a resistor in series with a capacitor\nV1 1 0 DC 5\nR1 1 2 1k\nC1 2 0 1u\n.op\n.end\n"
+ },
+ {
+  "id": "T12",
+  "text": "a 5V source with some resistors",
+  "note": "ambiguous: count and values unknown",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [
+   "note: 1 resistor had no value; the default 1k was used.",
+   "note: 'resistors' is plural but no number of parts was given; only one was built."
+  ],
+  "netlist": "* a 5V source with some resistors\nV1 1 0 DC 5\nR1 1 0 1k\n.op\n.end\n"
+ },
+ {
+  "id": "T13",
+  "text": "make me a circuit",
+  "note": "invalid: nothing to build",
+  "exit": 1,
+  "validation": "",
+  "warnings": [],
+  "netlist": ""
+ },
+ {
+  "id": "T14",
+  "text": "a 9V battery connected to",
+  "note": "incomplete: no load",
+  "exit": 1,
+  "validation": "",
+  "warnings": [],
+  "netlist": ""
+ },
+ {
+  "id": "T15",
+  "text": "resistors of 1k, 2k and 3k all in parallel with a 9V battery",
+  "note": "I = 9 + 4.5 + 3 = 16.5 mA",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* resistors of 1k, 2k and 3k all in parallel with a 9V battery\nV1 1 0 DC 9\nR1 1 0 1k\nR2 1 0 2k\nR3 1 0 3k\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 9.0,
+   "v1#branch": -0.0165
+  }
+ },
+ {
+  "id": "T16",
+  "text": "a 12V battery in series with a 1000 ohm resistor and a 1 kohm resistor",
+  "note": "notation: '1000 ohm' and '1 kohm'; V(2) = 6 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* a 12V battery in series with a 1000 ohm resistor and a 1 koh\nV1 1 0 DC 12\nR1 1 2 1000\nR2 2 0 1k\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 12.0,
+   "v(2)": 6.0,
+   "v1#branch": -0.006
+  }
+ },
+ {
+  "id": "T17",
+  "text": "A 24 V supply drives a 2 mH inductor in series with a 47 Ω resistor",
+  "note": "DC: inductor short, I = 0.511 A",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* A 24 V supply drives a 2 mH inductor in series with a 47 Ω r\nV1 1 0 DC 24\nL1 1 2 2m\nR1 2 0 47\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 24.0,
+   "v(2)": 24.0,
+   "l1#branch": 0.510638,
+   "v1#branch": -0.510638
+  }
+ },
+ {
+  "id": "T18",
+  "text": "TWO 220R RESISTORS IN SERIES WITH A 9V BATTERY",
+  "note": "upper case, 330R-style notation; V(2) = 4.5 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* TWO 220R RESISTORS IN SERIES WITH A 9V BATTERY\nV1 1 0 DC 9\nR1 1 2 220\nR2 2 0 220\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 9.0,
+   "v(2)": 4.5,
+   "v1#branch": -0.020455
+  }
+ },
+ {
+  "id": "T19",
+  "text": "a pair of 1k resistors in parallel, in series with a 2k resistor, all across 5V",
+  "note": "500 + 2000; I = 2 mA; V(2) = 4 V",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* a pair of 1k resistors in parallel, in series with a 2k resi\nV1 1 0 DC 5\nR1 1 2 1k\nR2 1 2 1k\nR3 2 0 2k\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 5.0,
+   "v(2)": 4.0,
+   "v1#branch": -0.002
+  }
+ },
+ {
+  "id": "T20",
+  "text": "a 9V battery and a resistor of 2 megohms in series",
+  "note": "unit word 'megohms'; I = 4.5 uA",
+  "exit": 0,
+  "validation": "validation: OK",
+  "warnings": [],
+  "netlist": "* a 9V battery and a resistor of 2 megohms in series\nV1 1 0 DC 9\nR1 1 0 2meg\n.op\n.end\n",
+  "topology": true,
+  "exact": true,
+  "op": true,
+  "op_values": {
+   "v(1)": 9.0,
+   "v1#branch": -5e-06
+  }
+ }
+]

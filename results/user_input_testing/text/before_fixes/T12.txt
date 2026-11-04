@@ -1,0 +1,11 @@
+$ python -m circuitvision.nlp.text2netlist "a 5V source with some resistors"
+
+a/O 5V/VAL source/SRC with/O some/O resistors/RES 
+
+* a 5V source with some resistors
+V1 1 0 DC 5
+R1 1 0 1k
+.op
+.end
+
+validation: OK

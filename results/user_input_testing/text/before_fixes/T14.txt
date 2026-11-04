@@ -1,0 +1,19 @@
+$ python -m circuitvision.nlp.text2netlist "a 9V battery connected to"
+
+
+[stderr]
+ last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/pawan/Developer/CircuitVision/src/circuitvision/nlp/text2netlist.py", line 79, in <module>
+    main()
+    ~~~~^^
+  File "/Users/pawan/Developer/CircuitVision/src/circuitvision/nlp/text2netlist.py", line 72, in main
+    net, tagged, errors = text_to_netlist(a.text)
+                          ~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/pawan/Developer/CircuitVision/src/circuitvision/nlp/text2netlist.py", line 37, in text_to_netlist
+    src, tree = parse(words, tags)
+                ~~~~~^^^^^^^^^^^^^
+  File "/Users/pawan/Developer/CircuitVision/src/circuitvision/nlp/parser.py", line 173, in parse
+    raise ValueError("no components found")
+ValueError: no components found

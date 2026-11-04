@@ -1,0 +1,20 @@
+[
+ {
+  "id": "C136_D1_P1",
+  "image": "C136_D1_P1.jpg",
+  "reference": true,
+  "valid": false,
+  "topology_match": false,
+  "exact_match": false,
+  "op_match": false
+ },
+ {
+  "id": "C137_D1_P1",
+  "image": "C137_D1_P1.jpg",
+  "reference": true,
+  "valid": true,
+  "topology_match": false,
+  "exact_match": false,
+  "op_match": false
+ }
+]
