@@ -258,6 +258,9 @@ module.exports.chapters = [
  ["h3", "4.5.2 Orientation classifier"],
  ["p", "One linear SVM per polarised class (diode, voltage source) is trained on HOG vectors of CGHD crops, with each rotation rounded to the nearest 90°. Mirrored symbols are excluded from training and scoring because the effect of a mirror on polarity depends on undocumented symbol templates. Internally, rotation is counter-clockwise and, at rotation 0, the positive terminal lies on a configured side."],
  ["p", "How CGHD's rotation values map to this convention was decided at **Gate 1** on 2 November 2026 from sheets of real crops: for diodes, LEDs, Zener diodes and batteries the anode or + is on the left at 0° and the symbol turns counter-clockwise, which agrees with the dataset's own port definitions for diodes. One label is an exception: all 182 rotated `voltage.dc` crops are labelled 0° with + on top, so 270° is added to that label when annotations are read (the raw value stays visible to the audit). A second team member reviewed both gate decisions independently on 4 November 2026."],
+ ["p", "{fig:rotdiode} and {fig:rotvdc} are two of the sheets used for this decision. Each row is one rotation bin (the CGHD value rounded to the nearest 90°), with eight randomly chosen real crops and the number of crops in the bin (n); the row marked *none* holds symbols with no rotation value, which are skipped. For diodes the triangle points right at 0°, up at 90°, left at 180° and down at 270°, so the anode moves from the left side counter-clockwise round the box. The `voltage.dc` sheet shows the exception: every rotated crop sits in the 0° bin, yet the + sign is on top. The remaining five sheets (LED, Zener, battery, and the out-of-scope AC source and thyrector) are in Appendix E."],
+ ["fig", "fig_rot_diode.png", 520, "rotdiode", "Gate 1 rotation sheet for `diode` (REAL CGHD v14 crops, CC BY 3.0): anode on the left at 0°, turning counter-clockwise"],
+ ["fig", "fig_rot_vdc.png", 520, "rotvdc", "Gate 1 rotation sheet for `voltage.dc` (REAL CGHD): all 182 rotated crops are labelled 0° with + on top, so 270° is added when reading this label"],
  ["p", "A preliminary local check on test drafter 12 gave 0.938 orientation accuracy on the 32 voltage sources (0.875 before the `voltage.dc` correction) and 0.950 on the 40 diodes; because these test crops were seen while choosing the correction, they are not reported as a result."],
  ["h3", "4.5.3 HMM tagger"],
  ["p", "A first-order HMM over 11 tags (SRC, RES, CAP, IND, DIO, VAL, UNIT, SER, PAR, SEP, O) is estimated by counting with add-k smoothing (k = 0.1) and decoded with the Viterbi algorithm {cite:viterbi} in log space. With tags *t* and words *w*, Viterbi finds argmax over *t₁…tₙ* of log π(t₁) + Σ log A(tᵢ₋₁, tᵢ) + Σ log B(tᵢ, wᵢ)."],
@@ -516,5 +519,13 @@ module.exports.appendices = [
    ["test_simulate.py", "2", "ngspice operating point"],
    ["test_colab_support.py", "2", "Training resume detection; label-check sampling"],
   ], [2700, 900, 5066]],
+ ]],
+ ["Appendix E: Gate 1 Rotation Sheets", [
+  ["p", "The remaining rotation sheets produced at Gate 1 by `python -m circuitvision.visualize rotation` on the MD5-checked CGHD release 14 (REAL CGHD crops, CC BY 3.0). The layout is the same as in {fig:rotdiode}: one row per rotation bin, eight random crops per row, and n crops in the bin. LEDs and batteries follow the diode convention. The Zener sheet also shows rows marked *mirror=vertical*; mirrored symbols are excluded from orientation training and scoring (Section 4.5.2). AC sources and thyrectors are outside the project's scope and are shown only because the sheet tool covers every `diode.*` and `voltage.*` label."],
+  ["fig", "fig_rot_led.png", 470, "rotled", "Rotation sheet for `diode.light_emitting` (LED)"],
+  ["fig", "fig_rot_zener.png", 470, "rotzener", "Rotation sheet for `diode.zener`, including the mirrored rows that are excluded"],
+  ["fig", "fig_rot_battery.png", 470, "rotbat", "Rotation sheet for `voltage.battery`"],
+  ["fig", "fig_rot_vac.png", 470, "rotvac", "Rotation sheet for `voltage.ac` (out of scope)"],
+  ["fig", "fig_rot_thyrector.png", 470, "rotthy", "Rotation sheet for `diode.thyrector` (out of scope)"],
  ]],
 ];
