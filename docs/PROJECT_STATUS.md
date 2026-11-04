@@ -21,7 +21,7 @@ The pipeline (image → netlist → validation → simulation, plus text → net
 
 ## Final report
 
-The submission report (Word, institute template, 47 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Every real-CGHD value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences; the cover's date of submission is also a highlighted placeholder. After the Colab run, Claude replaces the pending values from the evidence files and rebuilds. The report still gives the earlier count of 107 tests, in the text and in the per-file test table; update these at the same time.
+The submission report (Word, institute template, 47 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Every real-CGHD value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences; the cover's date of submission is also a highlighted placeholder. After the Colab run, the team fills in the pending values by hand from the evidence files (decided 2026-11-04). There is no slide deck. The report still gives the earlier count of 107 tests, in the text and in the per-file test table; update these at the same time.
 
 ## Tested
 
@@ -63,7 +63,7 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 |---|---|---|
 | 1 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
 | 2 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
-| 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
+| 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). The team fills the report by hand; Claude updates EXPERIMENTS.md and the docs from it. Demo: [`DEMO.md`](DEMO.md). |
 | 4 | Done | Independent review of the Gate 1 and Gate 2 evidence (T-2): Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)). |
 | 5 | Teammate | After step 3, check the report's numbers against `results/` and the evidence zip (T-5). T-3 is done: 12 reference netlists in [`references/`](../references/README.md), drafted by Claude from the photos and checked by Pawan; C-4 scores against them in the Colab run. T-4 is done: the related-work section is report Chapter 2, with sources reviewed by Pawan. |
 
@@ -80,6 +80,7 @@ python -m circuitvision.report_tables --exp <evidence folder> --out tables.md
 
 - [README](../README.md) · [EXPERIMENTS](../EXPERIMENTS.md) · [Project Bible](PROJECT_BIBLE.md) · [Colab notebook](../notebooks/train_colab.ipynb) · [Synthetic results tables](../results/tables.md)
 - Report: Word file built from [`report/`](../report/README.md) (submission format). Earlier draft: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn (private)
-- Slides: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD (private until Pranshu shares it)
+- Slides: none will be presented (decided 2026-11-04). An earlier draft deck exists at https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD.
+- Demo script: [`DEMO.md`](DEMO.md)
 
 *Update this file whenever a significant task finishes. Update the Bible only when architecture, methodology, assumptions or project facts change.*
