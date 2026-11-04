@@ -44,3 +44,10 @@ def test_photo_sent_from_phone_appears_once_on_the_laptop():
     shown, _, _, report, seen = ui.show_phone_photo(0.0)
     assert shown is img and "Photo received from the phone" in report and seen > 0
     assert ui.show_phone_photo(seen)[-1] == seen    # nothing new: nothing changes
+
+
+def test_image_report_shows_values_read_by_ocr():
+    dets = [Detection("voltage_source", (0, 0, 10, 10), conf=0.8)]
+    comps = [Component("V1", "voltage_source", (0, 0, 10, 10), [1, 0], "45")]
+    rep = image_report(dets, comps, "* t\nV1 1 0 45\nR1 1 0 1k\n.op\n.end\n", {"ground": "symbol"})
+    assert "V1 = 45: read from a handwritten label" in rep

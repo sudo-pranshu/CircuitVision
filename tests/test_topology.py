@@ -90,3 +90,17 @@ def test_filled_junction_dot_is_ink():
     cv2.circle(img, (750, 630), 18, (35, 35, 35), -1)
     mask = preprocess.binarize(img)
     assert mask[630, 750] == 255
+
+
+def test_faint_stretch_of_a_straight_wire_is_bridged_but_parallel_wires_stay_apart():
+    import numpy as np
+    from circuitvision.topology import extract_nets
+    from circuitvision.types import Detection
+    m = np.zeros((200, 400), np.uint8)
+    m[50:53, 20:150] = 255; m[50:53, 162:380] = 255       # one wire, 12 px faint gap (wider than gap_close)
+    m[70:73, 20:380] = 255                                 # a separate parallel wire 18 px below
+    dets = [Detection("resistor", (0, 40, 20, 80)), Detection("resistor", (380, 40, 400, 62)),
+            Detection("resistor", (380, 64, 400, 80))]
+    nets, _ = extract_nets(m, dets, pad=4, gap_close=8, inflate=0, min_wire=10)
+    assert nets[1][0] != nets[2][0]                        # the two wires are still different nets
+    assert nets[1][0] in nets[0]                           # the gapped wire reaches the left part

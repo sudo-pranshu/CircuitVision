@@ -7,7 +7,7 @@ import numpy as np
 
 from .types import Detection
 
-ALLOW = "0123456789.,kKmMuµnpGRrFfHhVvΩ"
+ALLOW = "0123456789.,kKmMuµnpGRrFfHhVvΩ+"     # "+" so "+5V" is not misread as "45V"
 
 _reader = None
 

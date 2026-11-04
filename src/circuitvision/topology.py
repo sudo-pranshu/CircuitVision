@@ -83,11 +83,23 @@ def extract_nets(mask: np.ndarray, dets: list[Detection], pad: int | None = None
 
     dets = [replace(d, box=_clip(d.box, mask.shape, inflate)) for d in dets]
     wires = mask.copy()
-    for d in dets:
-        if d.cls in MASKED:
-            x1, y1, x2, y2 = _clip(d.box, wires.shape)
-            wires[y1:y2, x1:x2] = 0
 
+    def mask_boxes(img):
+        for d in dets:
+            if d.cls in MASKED:
+                x1, y1, x2, y2 = _clip(d.box, img.shape)
+                img[y1:y2, x1:x2] = 0
+
+    mask_boxes(wires)
+    if gap_close:
+        # A faint stretch of pen breaks a straight wire into dashes wider than gap_close.
+        # Close them along the wire only (horizontal and vertical line kernels), so two
+        # parallel wires are never joined sideways; re-mask the boxes so nothing is
+        # bridged across a symbol.
+        span = 2 * gap_close
+        for k in (np.ones((1, span), np.uint8), np.ones((span, 1), np.uint8)):
+            wires = cv2.morphologyEx(wires, cv2.MORPH_CLOSE, k)
+        mask_boxes(wires)
     if gap_close:
         k = np.ones((gap_close, gap_close), np.uint8)
         wires = cv2.dilate(wires, k)

@@ -68,6 +68,9 @@ def image_report(dets, comps, spice: str, info: dict) -> str:
     for c in comps:
         if len(c.nets) == 2 and c.value is None and c.cls != "diode":
             warn.append(f"{c.ref}: no value label was read; the default {SPICE[c.cls][1]} was used.")
+        elif len(c.nets) == 2 and c.value is not None:
+            warn.append(f"{c.ref} = {c.value}: read from a handwritten label by OCR; check it against the drawing "
+                        "(e.g. a '+' is easily read as '4').")
     if info.get("ground", "").startswith("implicit"):
         warn.append(f"No ground symbol: ground was chosen automatically ({info['ground']}).")
     for i, a in enumerate(parts):              # one symbol, two labels: e.g. a battery also read as a capacitor
