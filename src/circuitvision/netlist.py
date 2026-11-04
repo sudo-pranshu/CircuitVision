@@ -7,6 +7,7 @@ from .types import Component, Detection
 
 VALUE_RE = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*(meg|[pnuµμmkKMG])?\s*(ohms?|Ω|[fFhHvV])?\s*$")
 RKM_RE = re.compile(r"^\s*(\d+)([pnuµμmkKMGR])(\d+)\s*(ohms?|Ω|[fFhHvV])?\s*$")   # 4k7, 2R2, 1M5
+R_SUFFIX_RE = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*R\s*$")                                 # 330R, 100R (BS 1852)
 UNIT_CLASS = {"ohm": "resistor", "ohms": "resistor", "Ω": "resistor", "f": "capacitor",
               "h": "inductor", "v": "voltage_source"}
 PREFIX = {"µ": "u", "μ": "u", "K": "k", "M": "meg", "G": "g", "R": ""}
@@ -18,10 +19,13 @@ def _center(box):
 
 def parse_value(text: str):
     """'10k' -> ('10k', None); '4,7uF' -> ('4.7u', 'capacitor'); '4k7' -> ('4.7k', None);
-    '2R2' -> ('2.2', None); 'R1' / 'S2' / labels -> (None, None).
+    '2R2' -> ('2.2', None); '330R' -> ('330', 'resistor'); 'R1' / 'S2' / labels -> (None, None).
 
     Returns (SPICE value, class implied by an explicit unit or None)."""
     t = text.strip().replace(",", ".")
+    m = R_SUFFIX_RE.match(t)
+    if m:
+        return m.group(1), "resistor"
     m = RKM_RE.match(t)
     if m:
         num, pre, unit = f"{m.group(1)}.{m.group(3)}", m.group(2), m.group(4)

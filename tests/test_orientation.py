@@ -60,7 +60,7 @@ def test_convention_from_environment():
     env = {k: v for k, v in os.environ.items() if not k.startswith("CIRCUITVISION_")}
     env["PYTHONPATH"] = str(Path(__file__).parents[1] / "src")
     default = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True).stdout
-    assert default.startswith("left False 90 left code default (UNVERIFIED)")
+    assert default.startswith("left False 90 left code default (Gate 1 decision, 2026-11-02)")
     env.update(CIRCUITVISION_PLUS_AT_0="right", CIRCUITVISION_CGHD_CLOCKWISE="1")
     set_ = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True).stdout
     assert set_.startswith("right True 270 right environment")
