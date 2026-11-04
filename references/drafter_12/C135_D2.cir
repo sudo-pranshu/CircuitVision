@@ -1,0 +1,11 @@
+* C135_D2
+* drafted by Claude from C135_D2_P1.jpg, 2026-11-04; checked against the photo by Pawan Shinde, 2026-11-04
+* diode bridge; as drawn, the + and - output corners are joined by a plain wire (no load), so they are one node (3)
+* omitted: AC source between nodes 1 (top corner) and 0 (bottom corner)
+D1 1 3 DMOD
+D2 0 3 DMOD
+D3 3 0 DMOD
+D4 3 1 DMOD
+.model DMOD D
+.op
+.end

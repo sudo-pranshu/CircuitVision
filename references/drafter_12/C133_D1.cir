@@ -1,0 +1,10 @@
+* C133_D1
+* drafted by Claude from C133_D1_P1.jpg, 2026-11-04; checked against the photo by Pawan Shinde, 2026-11-04
+* no values written on the drawing: defaults used
+* omitted: changeover switch with three terminals on nodes 0 (battery -), 2 (capacitor -) and 4 (inductor)
+V1 1 0 DC 5
+C1 1 2 1u
+R1 1 3 1k
+L1 3 4 1m
+.op
+.end

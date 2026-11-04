@@ -1,0 +1,10 @@
+* C000_D1
+* by <your name>, <date>
+* omitted: switch between nodes 1 and 2
+V1 1 0 DC 9
+R1 2 3 4.7k
+D1 3 0 DMOD
+C1 3 0 10u
+.model DMOD D
+.op
+.end
