@@ -723,7 +723,7 @@ Status as of `29f08a4`. Passing unit tests is **not** a real-photo result.
 | ngspice simulation | COMPLETE | Unit-tested; operating points match references on synthetic data |
 | NLP evaluation | COMPLETE | Fresh set 0.90 and Pawan's set 0.75 exact (HAND-WRITTEN, 20 sentences each, evaluated once). Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), Pawan's unchanged |
 | Gradio application | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Handler exercised with a synthetic model; needs real weights |
-| Final report | IN PROGRESS | Word report (48 pages) built from `report/`; updated 2026-11-04 with the gate decisions, dataset findings, new defects and NLP re-run. Real-results §6.3 is pending and is filled in by hand by the team |
+| Final report | IN PROGRESS | Word report (39 pages, compact layout) built from `report/`; updated 2026-11-04 with the gate decisions, dataset findings, new defects and NLP re-run. Real-results §6.3 is pending and is filled in by hand by the team |
 | Presentation | NOT NEEDED | No slide deck will be presented (decided 2026-11-04) |
 | Final demonstration | READY EXCEPT WEIGHTS | Script in [`DEMO.md`](DEMO.md); app checked on 2026-11-04 (starts, serves, processes a photo); needs `best.pt` and `models/` from Drive |
 
@@ -793,7 +793,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 
 | Deliverable | Where | Status | Pending |
 |---|---|---|---|
-| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 48 pages; updated 2026-11-04 | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
+| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 39 pages; updated 2026-11-04 (compact layout, name corrected to Pawan Shinde) | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
 | Earlier report draft | Claude Docs artifact, private: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn | Superseded by the Word report | — |
 | Slide deck (14 slides) | Claude Slides artifact: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD | Not presented (decided 2026-11-04) | — |
 | Live demo | [`DEMO.md`](DEMO.md) | Ready except the trained weights | `best.pt` and `models/` from Drive |

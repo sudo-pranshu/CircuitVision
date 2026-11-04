@@ -87,8 +87,8 @@ def fig_architecture():
 
 
 def fig_protocol():
-    fig, ax = plt.subplots(figsize=(7.2, 2.5))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 3); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.2, 1.7))
+    ax.set_xlim(0, 10); ax.set_ylim(0.25, 2.3); ax.axis("off")
     steps = [("Download\n+ MD5", BOXFILL, BLUE), ("Dataset\naudit", BOXFILL, BLUE),
              ("GATE 1\nrotation", "#fff4e0", "#c98500"), ("YOLO\nlabels", BOXFILL, BLUE),
              ("GATE 2\noverlays", "#fff4e0", "#c98500"), ("Train\nYOLOv8s", BOXFILL, BLUE),
