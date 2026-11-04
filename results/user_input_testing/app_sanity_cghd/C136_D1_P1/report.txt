@@ -1,0 +1,14 @@
+Detected 2 parts, 4 junctions, 0 crossovers, 4 labels.
+  voltage_source  confidence 0.69
+  resistor        confidence 0.82
+
+Validation: FAILED
+  node 0 is floating (1 connection)  (a wire end connects to only one part: a wire gap, or a part whose terminals were not found)
+  node 10 is floating (1 connection)  (a wire end connects to only one part: a wire gap, or a part whose terminals were not found)
+
+Check before trusting this netlist:
+  - V1 was left out: 1 wire ends were found at it instead of 2.
+  - R1: no value label was read; the default 1k was used.
+  - No ground symbol: ground was chosen automatically (implicit: most connected net).
+
+Simulation: skipped, because the netlist is not valid.

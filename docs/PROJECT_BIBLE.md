@@ -116,7 +116,7 @@ For each input (photo or sentence):
 - the ngspice DC operating point;
 - for photos, an overlay image with each net coloured.
 
-A Gradio web demo wraps the image path ([`src/circuitvision/app.py`](../src/circuitvision/app.py)). The academic deliverables are the report and the evidence bundle from the real experiment, plus a live demo ([`DEMO.md`](DEMO.md)). No slide deck will be presented (decided 2026-11-04).
+A Gradio web demo ([`src/circuitvision/app.py`](../src/circuitvision/app.py)) has a Photo tab for the image path and a Text tab for the text path; without weights only the Text tab works. User-input testing is recorded in [`USER_INPUT_TESTING.md`](USER_INPUT_TESTING.md). The academic deliverables are the report and the evidence bundle from the real experiment, plus a live demo ([`DEMO.md`](DEMO.md)). No slide deck will be presented (decided 2026-11-04).
 
 ### 1.8 Scope
 
@@ -577,7 +577,7 @@ python -m circuitvision.pipeline examples/divider.png --xml examples/divider.xml
 python -m circuitvision.pipeline photo.jpg --weights best.pt --orient models --simulate
 
 # web demo (localhost:7860)
-python -m circuitvision.app --weights best.pt [--orient models] [--no-ocr] [--share]
+python -m circuitvision.app [--weights best.pt] [--orient models] [--no-ocr] [--share]   # no weights: Text tab only
 
 # text → netlist
 python -m circuitvision.nlp.text2netlist "a 9V battery driving a 1k resistor in series with a 2k resistor"
@@ -723,7 +723,7 @@ Status as of 2026-11-04, after the baseline_v1 run. Passing unit tests is **not*
 | Grammar validation | COMPLETE | Deterministic; unit-tested; input-independent |
 | ngspice simulation | COMPLETE | Unit-tested; operating points match references on synthetic data |
 | NLP evaluation | COMPLETE | Fresh set 0.90 and Pawan's set 0.75 exact (HAND-WRITTEN, 20 sentences each, evaluated once). Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), Pawan's unchanged |
-| Gradio application | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Handler exercised with a synthetic model; needs real weights |
+| Gradio application | REAL-MODEL VERIFIED, USER PHOTOS UNTESTED | Photo and Text tabs; runs with baseline_v1 weights and reproduces the Colab netlists; reports confidences, dropped parts, defaults and double labels. No real user photo tested yet (USER_INPUT_TESTING.md) |
 | Final report | IN PROGRESS | Word report (48 pages) built from `report/`; updated 2026-11-04 with the gate decisions, dataset findings, new defects and NLP re-run. Real-results §6.3 is pending and is filled in by hand by the team |
 | Presentation | NOT NEEDED | No slide deck will be presented (decided 2026-11-04) |
 | Final demonstration | READY EXCEPT WEIGHTS | Script in [`DEMO.md`](DEMO.md); app checked on 2026-11-04 (starts, serves, processes a photo); needs `best.pt` and `models/` from Drive |

@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "2.2k\u03a9 resistor in series with 0.1uF cap, powered by 6 V"
+
+2.2k/VAL ohm/UNIT resistor/RES in/O series/SER with/O 0.1uF/VAL cap/CAP ,/SEP powered/O by/O 6/VAL V/UNIT 
+
+* 2.2kΩ resistor in series with 0.1uF cap, powered by 6 V
+V1 1 0 DC 6
+R1 1 2 2.2k
+C1 2 0 0.1u
+.op
+.end
+
+validation: OK

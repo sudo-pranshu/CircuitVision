@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "a 1M5 resistor and a 100n capacitor in parallel"
+
+a/O 1M5/VAL resistor/RES and/SEP a/O 100n/VAL capacitor/CAP in/O parallel/PAR 
+
+* a 1M5 resistor and a 100n capacitor in parallel
+V1 1 0 DC 5
+R1 1 0 1.5meg
+C1 1 0 100n
+.op
+.end
+
+validation: OK

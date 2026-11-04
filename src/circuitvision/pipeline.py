@@ -48,11 +48,16 @@ def overlay(img, comps, labels):
     vis = img.copy()
     wire = labels > 0
     vis[wire] = colors[labels[wire]]
+    k = max(1.0, max(img.shape[:2]) / 1000)          # keep labels readable on full-size phone photos
+    scale, thick = 0.5 * k, max(1, round(k))
     for c in comps:
         x1, y1, x2, y2 = c.box
-        cv2.rectangle(vis, (x1, y1), (x2, y2), (0, 0, 255), 2)
-        cv2.putText(vis, f"{c.ref} {c.nets}", (x1, max(12, y1 - 4)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+        cv2.rectangle(vis, (x1, y1), (x2, y2), (0, 0, 255), 2 * thick)
+        text = f"{c.ref} {c.nets}"
+        (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, thick)
+        y = max(th + 4, y1 - 4)
+        cv2.rectangle(vis, (x1, y - th - 4), (x1 + tw + 4, y + 2), (255, 255, 255), -1)   # white label background
+        cv2.putText(vis, text, (x1 + 2, y), cv2.FONT_HERSHEY_SIMPLEX, scale, (0, 0, 255), thick)
     return vis
 
 

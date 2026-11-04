@@ -1,0 +1,13 @@
+$ python -m circuitvision.nlp.text2netlist "hook up a 9 volt battery to an LED and a 330 ohm resistor"
+
+hook/O up/O a/O 9/VAL volt/UNIT battery/SRC to/O an/O LED/DIO and/SEP a/O 330/VAL ohm/UNIT resistor/RES 
+
+* hook up a 9 volt battery to an LED and a 330 ohm resistor
+V1 1 0 DC 9
+D1 1 2 DMOD
+R1 2 0 330
+.model DMOD D
+.op
+.end
+
+validation: OK

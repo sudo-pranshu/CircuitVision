@@ -11,9 +11,14 @@ TOKEN_RE = re.compile(
     r"|\d+(?:\.\d+)?[a-zA-Zµμ]*"           # 10k, 4.7uF, 9V, 220
     r"|[a-zA-Zµμ]+|[,()]")
 NUMERIC_RE = re.compile(r"^(\d+(\.\d+)?[a-zA-Zµμ]*|\d+[pnuµμmkKMGR]\d+)$")
+# spelled-out multiplier units the tagger never saw: "2 megohms" -> "2M ohm", "4.7 kilohm" -> "4.7k ohm"
+SPELLED_UNIT_RE = [(re.compile(r"(\d)\s*(?:mega?\s*ohms?|MΩ)\b", re.I), r"\1M ohm"),
+                   (re.compile(r"(\d)\s*kilo?\s*ohms?\b", re.I), r"\1k ohm")]
 
 
 def tokenize(text: str) -> list[str]:
+    for pattern, repl in SPELLED_UNIT_RE:
+        text = pattern.sub(repl, text)
     return TOKEN_RE.findall(text.replace("Ω", " ohm"))
 
 

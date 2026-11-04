@@ -1,0 +1,13 @@
+$ python -m circuitvision.nlp.text2netlist "a pair of 1k resistors in parallel, in series with a 2k resistor, all across 5V"
+
+a/O pair/O of/O 1k/VAL resistors/RES in/O parallel/PAR ,/SEP in/O series/SER with/O a/O 2k/VAL resistor/RES ,/SEP all/O across/O 5V/VAL 
+
+* a pair of 1k resistors in parallel, in series with a 2k resi
+V1 1 0 DC 5
+R1 1 2 1k
+R2 1 2 1k
+R3 2 0 2k
+.op
+.end
+
+validation: OK

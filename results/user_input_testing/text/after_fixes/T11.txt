@@ -1,0 +1,15 @@
+$ python -m circuitvision.nlp.text2netlist "a resistor in series with a capacitor"
+
+a/O resistor/RES in/O series/SER with/O a/O capacitor/CAP 
+
+* a resistor in series with a capacitor
+V1 1 0 DC 5
+R1 1 2 1k
+C1 2 0 1u
+.op
+.end
+
+validation: OK
+note: No voltage source was described; a default DC 5 V source was placed across the circuit.
+note: 1 capacitor had no value; the default 1u was used.
+note: 1 resistor had no value; the default 1k was used.

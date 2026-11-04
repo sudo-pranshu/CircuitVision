@@ -1,0 +1,25 @@
+Detected 6 parts, 6 junctions, 0 crossovers, 5 labels.
+  voltage_source  confidence 0.61
+  capacitor       confidence 0.75
+  resistor        confidence 0.80
+  capacitor       confidence 0.82
+  resistor        confidence 0.83
+  resistor        confidence 0.85
+
+Validation: OK
+
+Check before trusting this netlist:
+  - R1: no value label was read; the default 1k was used.
+  - R2: no value label was read; the default 1k was used.
+  - C1: no value label was read; the default 1u was used.
+  - R3: no value label was read; the default 1k was used.
+  - C2: no value label was read; the default 1u was used.
+  - V1: no value label was read; the default DC 5 was used.
+  - No ground symbol: ground was chosen automatically (implicit: first source, second terminal).
+  - One symbol was detected as both capacitor (0.75) and voltage_source (0.61); one of them is wrong, so the netlist has an extra part.
+
+DC operating point (ngspice):
+  v(1) = 5
+  v(2) = 0
+  v(3) = 5
+  v1#branch = 0

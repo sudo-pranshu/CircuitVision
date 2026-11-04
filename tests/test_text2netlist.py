@@ -103,3 +103,28 @@ def test_full_stop_is_not_a_tokenization_error():
             "source": None, "tree": "S(resistor:9k)"}                      # deliberately wrong gold tree
     row = evaluate([item])["sentences_detail"][0]
     assert not row["exact"] and row["error_type"] != "tokenization"
+
+
+def test_spelled_out_multiplier_units():
+    from circuitvision.nlp.text2netlist import text_to_netlist
+    net, _, errs = text_to_netlist("a 9V battery and a resistor of 2 megohms in series")
+    assert not errs and "R1 1 0 2meg" in net and "C1" not in net
+    assert "R1 1 0 4.7k" in text_to_netlist("a 4.7 kilohm resistor across a 5V battery")[0]
+
+
+def test_assumed_values_are_reported_not_silent():
+    from circuitvision.nlp.text2netlist import text_to_netlist_with_notes
+    _, _, _, notes = text_to_netlist_with_notes("a resistor in series with a capacitor")
+    assert any("No voltage source" in n for n in notes)
+    assert any("resistor had no value" in n for n in notes) and any("capacitor had no value" in n for n in notes)
+    _, _, _, notes = text_to_netlist_with_notes("a 5V source with some resistors")
+    assert any("plural" in n for n in notes)
+    _, _, _, notes = text_to_netlist_with_notes("a 9V battery driving a 1k resistor in series with a 2k resistor")
+    assert notes == []
+
+
+def test_cli_explains_a_description_with_no_components():
+    import subprocess, sys
+    p = subprocess.run([sys.executable, "-m", "circuitvision.nlp.text2netlist", "make me a circuit"],
+                       capture_output=True, text=True)
+    assert p.returncode != 0 and "No circuit components" in p.stderr and "Traceback" not in p.stderr

@@ -1,0 +1,14 @@
+$ python -m circuitvision.nlp.text2netlist "A 10V supply feeds a 100 ohm resistor, followed by two branches in parallel: one with a 220 ohm and a 330 ohm resistor in series, and the other with a single 1k resistor."
+
+A/O 10V/VAL supply/SRC feeds/O a/O 100/VAL ohm/UNIT resistor/RES ,/SEP followed/SER by/O two/O branches/O in/O parallel/PAR one/O with/O a/O 220/VAL ohm/UNIT and/SEP a/O 330/VAL ohm/UNIT resistor/RES in/O series/SER ,/SEP and/SEP the/O other/O with/O a/O single/O 1k/VAL resistor/RES 
+
+* A 10V supply feeds a 100 ohm resistor, followed by two branc
+V1 1 0 DC 10
+R1 1 0 100
+R2 1 2 220
+R3 2 3 330
+R4 3 0 1k
+.op
+.end
+
+validation: OK

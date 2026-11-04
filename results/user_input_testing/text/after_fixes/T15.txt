@@ -1,0 +1,13 @@
+$ python -m circuitvision.nlp.text2netlist "resistors of 1k, 2k and 3k all in parallel with a 9V battery"
+
+resistors/RES of/O 1k/VAL ,/SEP 2k/VAL and/SEP 3k/VAL all/O in/O parallel/PAR with/O a/O 9V/VAL battery/SRC 
+
+* resistors of 1k, 2k and 3k all in parallel with a 9V battery
+V1 1 0 DC 9
+R1 1 0 1k
+R2 1 0 2k
+R3 1 0 3k
+.op
+.end
+
+validation: OK

@@ -1,0 +1,13 @@
+$ python -m circuitvision.nlp.text2netlist "A diode connected in series with a 470 ohm resistor and a 5V DC source."
+
+A/O diode/DIO connected/O in/O series/SER with/O a/O 470/VAL ohm/UNIT resistor/RES and/SEP a/O 5V/VAL DC/UNIT source/SRC 
+
+* A diode connected in series with a 470 ohm resistor and a 5V
+V1 1 0 DC 5
+D1 1 2 DMOD
+R1 2 0 470
+.model DMOD D
+.op
+.end
+
+validation: OK

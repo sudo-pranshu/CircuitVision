@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "a resistor in series with a capacitor"
+
+a/O resistor/RES in/O series/SER with/O a/O capacitor/CAP 
+
+* a resistor in series with a capacitor
+V1 1 0 DC 5
+R1 1 2 1k
+C1 2 0 1u
+.op
+.end
+
+validation: OK

@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "A 9V battery connected to a 1k resistor and a 2k resistor in series."
+
+A/O 9V/VAL battery/SRC connected/O to/O a/O 1k/VAL resistor/RES and/SEP a/O 2k/VAL resistor/RES in/O series/SER 
+
+* A 9V battery connected to a 1k resistor and a 2k resistor in
+V1 1 0 DC 9
+R1 1 2 1k
+R2 2 0 2k
+.op
+.end
+
+validation: OK

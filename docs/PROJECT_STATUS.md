@@ -54,7 +54,7 @@ The submission report (Word, institute template, 48 pages) is built from [`repor
 
 | What | Result | Label |
 |---|---|---|
-| Unit and regression tests | 129 pass (`pytest -q`; macOS and Linux, ngspice present, 2026-11-04) | — |
+| Unit and regression tests | 136 pass (`pytest -q`, macOS, 2026-11-04, after the user-testing fixes); 129 before | — |
 | GT-box end to end, synthetic drafters 10–12, re-run after PRs #5–#11 | 18/18 topology, exact and op match; OCR 0.914 / 0.950; orientation 18/18 | SYNTHETIC |
 | Wire tracing, 11 photo conditions | 0.994 exact topology | SYNTHETIC |
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
@@ -63,7 +63,8 @@ The submission report (Word, institute template, 48 pages) is built from [`repor
 | Text → netlist re-run after the 2026-11-04 fixes | Fresh 1.00 (optimistic), 30-sentence 1.00, Pawan's 0.75 unchanged | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
 | Training resume on Colab | Resumed across six sessions and two GPUs (T4, then A100) with the saved gates | Real |
-| Demo app (`app.py`) | Starts, serves on localhost, processes a photo end to end (throwaway weights) | — |
+| Demo app (`app.py`) | Runs with the real model on macOS; netlist for C137_D1_P1 identical to the Colab evidence; Text tab tested in a browser | REAL CGHD (sanity check), USER TEXT |
+| Text input, 20 typed descriptions (user testing) | 12 of 15 with a definite answer correct; 2 invalid inputs rejected clearly; 3 assumption cases reported | USER INPUT ([`USER_INPUT_TESTING.md`](USER_INPUT_TESTING.md)) |
 
 ## Reproduced by the teammate (T-1, 2026-11-02)
 
@@ -83,9 +84,16 @@ The EasyOCR model download from `release-assets.githubusercontent.com` was reset
 
 Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training run.
 
+## User-input testing (2026-11-04)
+
+See [`USER_INPUT_TESTING.md`](USER_INPUT_TESTING.md).
+- **Text:** 20 typed descriptions through the real CLI. 12 of 15 with a definite answer are electrically correct. Three sentence structures still give valid but wrong circuits. Missing values and invalid input are now reported instead of guessed.
+- **Images:** **no real user photo tested yet.** The app runs with the real model on this Mac and reproduces the Colab netlists (CGHD sanity check only).
+- **App:** a Text tab, it starts without weights, and the photo report shows confidences, dropped parts, defaulted values and double-labelled symbols. Overlay labels are readable.
+
 ## Not tested
 
-- The Gradio demo with the real weights (`best.pt` and `models/` are on Drive, not in the zip).
+- Real hand-drawn photos from users: none yet; the plan and runner are in `results/user_input_testing/images/`.
 - Value reading on real handwritten values: drafter 12 has only 4 value labels.
 
 ## Tasks
@@ -111,8 +119,9 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 | 1 | Team | Fill the report's PENDING values by hand from [`results/baseline_v1/tables.md`](../results/baseline_v1/tables.md) and EXPERIMENTS (Results: baseline_v1), including the early stop, the hardware note and the analog-photo base. |
 | 2 | Pawan | T-5: check every report number against `results/baseline_v1/`. |
 | 3 | Pawan or Pranshu | T-6: `python -m circuitvision.report_tables --exp <unzipped evidence> --out tables.md` on a clean machine; it must match `results/baseline_v1/tables.md`. |
-| 4 | Pawan | Demo prep per [`DEMO.md`](DEMO.md): download `best.pt` and `models/` from `MyDrive/CircuitVision/experiments/baseline_v1/`. |
-| 5 | Pranshu | Submission date for the report cover. |
+| 4 | Pawan | Draw and photograph the 10 user test circuits, with values written on them, and write each reference netlist (`results/user_input_testing/images/README.md`); Claude runs them and completes `USER_INPUT_TESTING.md`. |
+| 5 | Pawan | Demo prep per [`DEMO.md`](DEMO.md). The weights and models are already in `runs/baseline_v1/` and `experiments/baseline_v1/models/` on Pawan's Mac. |
+| 6 | Pranshu | Submission date for the report cover. |
 
 ## Commands
 

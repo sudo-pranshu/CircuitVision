@@ -1,0 +1,12 @@
+$ python -m circuitvision.nlp.text2netlist "A 24 V supply drives a 2 mH inductor in series with a 47 \u03a9 resistor"
+
+A/O 24/VAL V/UNIT supply/SRC drives/O a/O 2/VAL mH/UNIT inductor/IND in/O series/SER with/O a/O 47/VAL ohm/UNIT resistor/RES 
+
+* A 24 V supply drives a 2 mH inductor in series with a 47 Ω r
+V1 1 0 DC 24
+L1 1 2 2m
+R1 2 0 47
+.op
+.end
+
+validation: OK

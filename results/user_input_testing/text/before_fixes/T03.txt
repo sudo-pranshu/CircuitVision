@@ -1,0 +1,13 @@
+$ python -m circuitvision.nlp.text2netlist "A 5V source connected to a 1k resistor in series with a parallel combination of 2k and 3k resistors."
+
+A/O 5V/VAL source/SRC connected/O to/O a/O 1k/VAL resistor/RES in/O series/SER with/O a/O parallel/PAR combination/O of/O 2k/VAL and/SEP 3k/VAL resistors/RES 
+
+* A 5V source connected to a 1k resistor in series with a para
+V1 1 0 DC 5
+R1 1 0 1k
+R2 1 2 2k
+R3 2 0 3k
+.op
+.end
+
+validation: OK

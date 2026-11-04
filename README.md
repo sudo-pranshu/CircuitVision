@@ -46,7 +46,7 @@ python -m circuitvision.pipeline examples/divider.png --xml examples/divider.xml
 
 # Image -> netlist with a trained detector (and optional orientation models)
 python -m circuitvision.pipeline photo.jpg --weights best.pt --orient models --simulate
-python -m circuitvision.app --weights best.pt                 # web demo, localhost:7860
+python -m circuitvision.app --weights best.pt                 # web demo, localhost:7860 (Photo and Text tabs; Text works without --weights)
 
 # Text -> netlist
 python -m circuitvision.nlp.text2netlist "a 9V battery driving a 1k resistor in series with (a 2k resistor in parallel with a 3k resistor)"
