@@ -1,0 +1,10 @@
+* CircuitVision netlist
+* ground: implicit: first source, second terminal
+D1 0 3 DMOD
+L1 2 0 1m
+C1 2 1 1u
+R1 3 2 1k
+V1 1 0 45
+.model DMOD D
+.op
+.end

@@ -1,0 +1,9 @@
+* reference written from the drawing
+V1 3 0 DC 5
+C1 2 3 1u
+R1 1 2 1k
+L1 2 0 1m
+D1 0 1 DMOD
+.model DMOD D
+.op
+.end

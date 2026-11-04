@@ -1,0 +1,7 @@
+* CircuitVision netlist
+* ground: symbol
+L1 0 3 1m
+* WARNING R1: found 3 terminals [3, 0, 0], skipped
+* WARNING C1: found 3 terminals [0, 0, 10], skipped
+.op
+.end

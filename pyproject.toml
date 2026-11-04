@@ -6,7 +6,7 @@ dependencies = ["opencv-python<5", "numpy", "pillow"]   # OpenCV 5 has no cv2.HO
 
 [project.optional-dependencies]
 detect = ["ultralytics==8.4.184", "easyocr==1.7.2"]   # versions the pipeline was tested with
-app = ["gradio>=5"]
+app = ["gradio>=5", "segno>=1.6"]   # segno: QR code for the phone link
 dev = ["pytest"]
 
 [build-system]

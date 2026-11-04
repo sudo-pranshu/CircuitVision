@@ -13,7 +13,9 @@ const {
 const OUT = process.argv[2];
 const PAGES = process.argv[3] && fs.existsSync(process.argv[3]) ? JSON.parse(fs.readFileSync(process.argv[3])) : {};
 const FIG = path.join(__dirname, "fig");
-const TW = 8666;                      // text width in twips (A4 - 1.25in - 1in)
+const TW = 9746;                      // text width in twips (A4 - 2 x 0.75in)
+const BASE = 8666;                    // widths in content.js are written for this text width
+const fit = ws => { const s = ws.map(w => Math.round(w * TW / BASE)); s[s.length - 1] += TW - s.reduce((a, b) => a + b, 0); return s; };
 const FONT = "Times New Roman";
 const MONO = "Courier New";
 
@@ -58,7 +60,7 @@ function runs(text, base = {}) {
 }
 
 const body = (text, opts = {}) => new Paragraph({ children: runs(text), alignment: AlignmentType.JUSTIFIED,
-  spacing: { line: 360, after: 120 }, ...opts });
+  spacing: { line: 360, after: 60 }, ...opts });
 
 // ---------- lists ----------
 const numberingConfig = [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•",
@@ -72,7 +74,7 @@ function list(items, ordered) {
       alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 360 } } } }] });
   }
   return items.map(t => new Paragraph({ children: runs(t), numbering: { reference: ref, level: 0 },
-    alignment: AlignmentType.JUSTIFIED, spacing: { line: 360, after: 60 } }));
+    alignment: AlignmentType.JUSTIFIED, spacing: { line: 360, after: 20 } }));
 }
 
 // ---------- tables ----------
@@ -82,28 +84,29 @@ function cell(text, w, header) {
   return new TableCell({
     width: { size: w, type: WidthType.DXA }, borders, verticalAlign: VerticalAlign.CENTER,
     shading: header ? { fill: "DCE6F2", type: ShadingType.CLEAR, color: "auto" } : undefined,
-    margins: { top: 60, bottom: 60, left: 100, right: 100 },
-    children: [new Paragraph({ children: runs(text, { size: 21, bold: header || undefined }),
-      spacing: { line: 252, after: 0 } })],
+    margins: { top: 30, bottom: 30, left: 90, right: 90 },
+    children: [new Paragraph({ children: runs(text, { size: 20, bold: header || undefined }),
+      spacing: { line: 240, after: 0 } })],
   });
 }
 function caption(kind, n, text) {
   return new Paragraph({
     style: "Caption", alignment: AlignmentType.CENTER, keepNext: kind === "Table",
-    spacing: { before: kind === "Table" ? 200 : 80, after: kind === "Table" ? 80 : 240 },
+    spacing: { before: kind === "Table" ? 120 : 40, after: kind === "Table" ? 60 : 160 },
     children: [new TextRun({ text: `${kind} `, bold: true }),
       new SimpleField(`SEQ ${kind} \\* ARABIC`, String(n)),
       new TextRun({ text: ": ", bold: true }), ...runs(text)],
   });
 }
-function table(key, cap, headers, rows, widths) {
-  const sum = widths.reduce((a, b) => a + b, 0);
-  if (sum !== TW) throw new Error(`table ${key} widths sum ${sum} != ${TW}`);
+function table(key, cap, headers, rows, widths0) {
+  const sum = widths0.reduce((a, b) => a + b, 0);
+  const widths = fit(widths0);
+  if (sum !== BASE) throw new Error(`table ${key} widths sum ${sum} != ${TW}`);
   return [caption("Table", tabNum[key], cap), new Table({
     width: { size: TW, type: WidthType.DXA }, columnWidths: widths,
     rows: [new TableRow({ tableHeader: true, children: headers.map((h, i) => cell(h, widths[i], true)) }),
       ...rows.map(r => new TableRow({ children: r.map((c, i) => cell(c, widths[i], false)) }))],
-  }), new Paragraph({ spacing: { after: 120 }, children: [] })];
+  }), Object.assign(new Paragraph({ spacing: { after: 40, line: 240 }, children: [] }), { spacer: true })];
 }
 
 // ---------- figures ----------
@@ -115,7 +118,7 @@ function figure(file, widthPx, key, cap) {
   const f = path.join(FIG, file);
   const [w, h] = pngSize(f);
   const width = Math.min(widthPx, 575);
-  return [new Paragraph({ alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 120, after: 60 },
+  return [new Paragraph({ alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 60, after: 20 },
     children: [new ImageRun({ type: "png", data: fs.readFileSync(f),
       transformation: { width, height: Math.round(width * h / w) } })] }),
     caption("Figure", figNum[key], cap)];
@@ -126,7 +129,7 @@ function code(text) {
   return lines.map((l, i) => new Paragraph({
     children: [new TextRun({ text: l.replace(/ /g, " ") || " ", font: MONO, size: 16 })],
     shading: { fill: "F3F4F6", type: ShadingType.CLEAR, color: "auto" },
-    spacing: { line: 240, before: i === 0 ? 80 : 0, after: i === lines.length - 1 ? 160 : 0 },
+    spacing: { line: 240, before: i === 0 ? 40 : 0, after: i === lines.length - 1 ? 100 : 0 },
     indent: { left: 120, right: 120 }, keepLines: true, keepNext: i < lines.length - 1,
   }));
 }
@@ -218,45 +221,47 @@ const prelim = [];
 prelim.push(prelimHeading("Certificate", "Certificate"), ...blocks(C.prelim.certificate), ...sigLine(M.guide, "Project Guide"), ...datePlace);
 prelim.push(prelimHeading("Declaration", "Declaration"), ...blocks(C.prelim.declaration));
 prelim.push(new Paragraph({ spacing: { before: 600 }, children: [] }));
-prelim.push(new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: [3600, 2200, 2866],
+prelim.push(new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: fit([3600, 2200, 2866]),
   rows: [["Name", "Roll Number", "Signature"], ...M.students.map(s => [...s, ""])].map((r, i) => new TableRow({
     height: { value: i ? 700 : 400, rule: "atLeast" },
-    children: r.map((c, j) => cell(c, [3600, 2200, 2866][j], i === 0)) })) }));
+    children: r.map((c, j) => cell(c, fit([3600, 2200, 2866])[j], i === 0)) })) }));
 prelim.push(...datePlace);
 prelim.push(prelimHeading("Acknowledgement", "Acknowledgement"), ...blocks(C.prelim.ack));
-prelim.push(new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 400 }, children: [new TextRun({ text: "Pranshu Kumar (231090054)" })] }));
-prelim.push(new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "Pawan Shine (231090063)" })] }));
+M.students.forEach(([n, r], i) => prelim.push(new Paragraph({ alignment: AlignmentType.RIGHT,
+  spacing: { before: i ? 0 : 400 }, children: [new TextRun({ text: `${n} (${r})` })] })));
 prelim.push(prelimHeading("Abstract", "Abstract"), ...blocks(C.prelim.abstract));
 prelim.push(new Paragraph({ spacing: { before: 200 }, alignment: AlignmentType.JUSTIFIED, children: [
   new TextRun({ text: "Keywords: ", bold: true }),
   new TextRun({ text: "hand-drawn circuit recognition, YOLOv8, image processing, wire tracing, OCR, SPICE netlist, context-free grammar, Earley parser, hidden Markov model, ngspice", italics: true })] }));
-prelim.push(prelimHeading("List of Abbreviations", "List of Abbreviations"));
-prelim.push(new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: [1800, 6866],
-  rows: C.abbrev.map(([a, b]) => new TableRow({ children: [cell(`**${a}**`, 1800, false), cell(b, 6866, false)] })) }));
+const abbrevTable = new Table({ width: { size: TW, type: WidthType.DXA }, columnWidths: fit([1800, 6866]),
+  rows: C.abbrev.map(([a, b]) => new TableRow({ children: [cell(`**${a}**`, fit([1800, 6866])[0], false), cell(b, fit([1800, 6866])[1], false)] })) });
 
-tocEntries.push({ level: 1, text: "List of Figures", key: "List of Figures" });
-tocEntries.push({ level: 1, text: "List of Tables", key: "List of Tables" });
+for (const name of ["List of Figures", "List of Tables", "List of Abbreviations"])
+  tocEntries.push({ level: 1, text: name, key: name });
 
 // main chapters, appendices and references
 const main = [];
-for (const [title, bl] of C.chapters) {
+// only Chapter 1 opens a page; later chapters run on, so chapter ends don't leave half-empty pages
+const runOn = { pageBreakBefore: false, spacing: { before: 480, after: 240 } };
+for (const [i, [title, bl]] of C.chapters.entries()) {
   tocEntries.push({ level: 1, text: title, key: title });
-  main.push(h1(title));
+  main.push(i === 0 ? h1(title) : h1(title, runOn));
   for (const b of bl) if (b[0] === "h2") tocEntries.push({ level: 2, text: b[1], key: b[1] });
   main.push(...blocks(bl));
 }
 tocEntries.push({ level: 1, text: "References", key: "References" });
-main.push(h1("References"));
+main.push(h1("References", runOn));
 const refOrder = Object.keys(citeNum).sort((a, b) => citeNum[a] - citeNum[b]);
 for (const k of refOrder)
   main.push(new Paragraph({ children: [new TextRun(`[${citeNum[k]}]\t`), ...runs(C.refs[k])],
     tabStops: [{ type: TabStopType.LEFT, position: 600 }], indent: { left: 600, hanging: 600 },
-    alignment: AlignmentType.LEFT, spacing: { line: 300, after: 100 } }));
-for (const [title, bl] of C.appendices) {
+    alignment: AlignmentType.LEFT, spacing: { line: 276, after: 60 } }));
+C.appendices.forEach(([title, bl], i) => {
   tocEntries.push({ level: 1, text: title, key: title });
-  main.push(h1(title));
+  main.push(h1(title, runOn));
   main.push(...blocks(bl));
-}
+});
+while (main.length && main[main.length - 1].spacer) main.pop();   // no blank page after the last table
 for (const b of allBlocks) {
   if (b[0] === "fig") lofEntries.push({ level: 1, text: `Figure ${figNum[b[3]]}: ${subst(b[4])}`, key: `Figure ${figNum[b[3]]}:` });
   if (b[0] === "table") lotEntries.push({ level: 1, text: `Table ${tabNum[b[1]]}: ${subst(b[2])}`, key: `Table ${tabNum[b[1]]}:` });
@@ -265,23 +270,27 @@ for (const b of allBlocks) {
 // TOC / LOF / LOT pages (placed after the abbreviations); field instructions are inserted by finish.py
 const finalLists = [centeredTitle("Table of Contents"), ...fieldBlock(1, tocEntries, "TOC1", "TOC2"),
   h1("List of Figures", { alignment: AlignmentType.CENTER }), ...fieldBlock(2, lofEntries, "TableofFigures", "TableofFigures"),
-  h1("List of Tables", { alignment: AlignmentType.CENTER }), ...fieldBlock(3, lotEntries, "TableofFigures", "TableofFigures")];
+  // the three short lists run on, instead of each starting a new page
+  h1("List of Tables", { alignment: AlignmentType.CENTER, pageBreakBefore: false, spacing: { before: 480, after: 240 } }),
+  ...fieldBlock(3, lotEntries, "TableofFigures", "TableofFigures"),
+  h1("List of Abbreviations", { alignment: AlignmentType.CENTER, pageBreakBefore: false, spacing: { before: 480, after: 240 } }),
+  abbrevTable];
 
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER,
   children: [new TextRun({ children: [PageNumber.CURRENT], size: 22 })] })] });
-const page = { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1800, footer: 600 } };
+const page = { size: { width: 11906, height: 16838 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080, footer: 450 } };
 
 const doc = new Document({
-  creator: "Pranshu Kumar, Pawan Shine", title: "CircuitVision Mini Project Report",
+  creator: M.students.map(s => s[0]).join(", "), title: "CircuitVision Mini Project Report",
   styles: {
     default: { document: { run: { font: FONT, size: 24 } } },
     paragraphStyles: [
       { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { font: FONT, size: 32, bold: true }, paragraph: { spacing: { before: 0, after: 360 }, outlineLevel: 0, keepNext: true } },
+        run: { font: FONT, size: 32, bold: true }, paragraph: { spacing: { before: 0, after: 240 }, outlineLevel: 0, keepNext: true } },
       { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { font: FONT, size: 28, bold: true }, paragraph: { spacing: { before: 300, after: 120 }, outlineLevel: 1, keepNext: true } },
+        run: { font: FONT, size: 28, bold: true }, paragraph: { spacing: { before: 200, after: 80 }, outlineLevel: 1, keepNext: true } },
       { id: "Heading3", name: "Heading 3", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { font: FONT, size: 24, bold: true }, paragraph: { spacing: { before: 200, after: 100 }, outlineLevel: 2, keepNext: true } },
+        run: { font: FONT, size: 24, bold: true }, paragraph: { spacing: { before: 120, after: 60 }, outlineLevel: 2, keepNext: true } },
       { id: "PrelimTitle", name: "Prelim Title", basedOn: "Normal", next: "Normal",
         run: { font: FONT, size: 32, bold: true }, paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 360 } } },
       { id: "Caption", name: "caption", basedOn: "Normal", next: "Normal", run: { font: FONT, size: 22 } },

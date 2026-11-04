@@ -15,3 +15,6 @@ __pycache__/
 /report/*.pdf
 /report/pages*.json
 /report/raw.docx*
+
+# report build dependency (npm install docx)
+node_modules/

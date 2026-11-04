@@ -32,3 +32,22 @@ def test_image_report_flags_one_symbol_with_two_labels():
              Component("V1", "voltage_source", (1, 0, 100, 41), [1, 0], "DC 9")]
     rep = image_report(dets, comps, "* t\nV1 1 0 DC 9\nC1 1 0 1u\n.op\n.end\n", {"ground": "symbol"})
     assert "detected as both capacitor (0.75) and voltage_source (0.61)" in rep
+
+
+def test_photo_sent_from_phone_appears_once_on_the_laptop():
+    import numpy as np
+    from circuitvision.app import build_ui
+    ui = build_ui(None)                          # no weights: process() returns its explanation
+    assert "Take or choose a photo" in ui.send_from_phone(None)
+    img = np.zeros((8, 8, 3), np.uint8)
+    assert "Sent" in ui.send_from_phone(img)
+    shown, _, _, report, seen = ui.show_phone_photo(0.0)
+    assert shown is img and "Photo received from the phone" in report and seen > 0
+    assert ui.show_phone_photo(seen)[-1] == seen    # nothing new: nothing changes
+
+
+def test_image_report_shows_values_read_by_ocr():
+    dets = [Detection("voltage_source", (0, 0, 10, 10), conf=0.8)]
+    comps = [Component("V1", "voltage_source", (0, 0, 10, 10), [1, 0], "45")]
+    rep = image_report(dets, comps, "* t\nV1 1 0 45\nR1 1 0 1k\n.op\n.end\n", {"ground": "symbol"})
+    assert "V1 = 45: read from a handwritten label" in rep

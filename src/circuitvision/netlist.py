@@ -22,7 +22,7 @@ def parse_value(text: str):
     '2R2' -> ('2.2', None); '330R' -> ('330', 'resistor'); 'R1' / 'S2' / labels -> (None, None).
 
     Returns (SPICE value, class implied by an explicit unit or None)."""
-    t = text.strip().replace(",", ".")
+    t = text.strip().replace(",", ".").lstrip("+ ")          # "+5V" on a source label is 5 V
     m = R_SUFFIX_RE.match(t)
     if m:
         return m.group(1), "resistor"
