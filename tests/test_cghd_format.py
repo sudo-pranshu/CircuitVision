@@ -121,6 +121,14 @@ def test_voltage_dc_rotation_puts_plus_on_top(tmp_path):
     assert positive_side(o.cls, from_cghd(o.rotation)) == "top"
 
 
+def test_malformed_voltage_dc_rotation_does_not_crash(tmp_path):
+    x = tmp_path / "a.xml"
+    x.write_text("<annotation><object><name>voltage.dc</name><bndbox><xmin>0</xmin><ymin>0</ymin>"
+                 "<xmax>9</xmax><ymax>9</ymax><rotation>n/a</rotation></bndbox></object></annotation>")
+    o = parse_voc(x)[2][0]
+    assert from_cghd(o.rotation) is None                     # skipped as "no rotation", not an exception
+
+
 def _placeholder_size_tree(root, image):
     d = root / "drafter_1"
     (d / "annotations").mkdir(parents=True)

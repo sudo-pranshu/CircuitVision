@@ -22,9 +22,9 @@ At epoch 20, the validation check on drafter 11 gave mAP50 0.925 and mAP50-95 0.
 
 When the zip arrives, confirm that `commit.txt` names a commit on `main`. Between 11:45 and 11:55 IST on 2026-11-04, `main` briefly held the sync-audit commits (see below). A session started in that window would have recorded them, though they don't change training or the label conversion.
 
-## Sync audit by Pranshu (2026-11-04): not on `main` yet
+## Sync audit by Pranshu (2026-11-04)
 
-Pranshu reviewed PRs #5–#11 and kept them as they are. His fixes are on `feature/sync-audit-nov4` (`5137acd`, plus docs in `93a7bea`); he pushed them to `main` and then reverted them (`ba0ee7e`), so `main` is unchanged. The plan is to cherry-pick `5137acd` after this status update.
+Pranshu reviewed PRs #5–#11 and kept them as they are. His fixes (`5137acd`) and docs (`93a7bea`) were first merged and reverted (`ba0ee7e`), then brought onto `main` from `feature/Pawan` by cherry-picking both commits, after the status update above. Each fix was checked against the running training:
 
 | Fix | Effect on the running training |
 |---|---|
@@ -35,7 +35,7 @@ Pranshu reviewed PRs #5–#11 and kept them as they are. His fixes are on `featu
 | Gate 1 values prefilled in the notebook | None: Gate 1 is already saved on Drive |
 | Convention labelled as the Gate 1 decision; Pawan's set added to `results/tables.md` | None |
 
-The NLP fixes target the fresh set's two failures. **The fresh set's recorded 0.90 therefore stays the headline**, and its 1.00 re-run is optimistic (`results/nlp_rerun_2026-11-04/` on that branch).
+The NLP fixes target the fresh set's two failures. **The fresh set's recorded 0.90 therefore stays the headline**, and its 1.00 re-run is optimistic (`results/nlp_rerun_2026-11-04/`).
 
 ## What works
 
@@ -51,17 +51,19 @@ The NLP fixes target the fresh set's two failures. **The fresh set's recorded 0.
 
 ## Final report
 
-The submission report (Word, institute template) is built from [`report/`](../report/README.md). The team fills in the real-CGHD values by hand from the evidence files (decided 2026-11-04). Every such value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences, and the cover's date of submission is a placeholder. PR #10 updated the source for 125 tests, the T-7 NLP result and the T-3 references; the `.docx` hasn't been rebuilt since. There is no slide deck.
+The submission report (Word, institute template, 48 pages) is built from [`report/`](../report/README.md). Pranshu updated its source on 2026-11-04 with the Gate 1 and 2 decisions, the full-dataset findings, the new defects, the NLP re-run and 129 tests. The team fills in the real-CGHD values by hand from the evidence files (decided 2026-11-04). Every such value is highlighted `PENDING: real CGHD run` (§6.3 and a few sentences), and the cover's date of submission is a placeholder. There is no slide deck.
 
 ## Tested
 
 | What | Result | Label |
 |---|---|---|
-| Unit and regression tests | 125 pass (`pytest -q`, macOS, ngspice present, `main`, 2026-11-04) | — |
+| Unit and regression tests | 129 pass (`pytest -q`; macOS and Linux, ngspice present, 2026-11-04) | — |
+| GT-box end to end, synthetic drafters 10–12, re-run after PRs #5–#11 | 18/18 topology, exact and op match; OCR 0.914 / 0.950; orientation 18/18 | SYNTHETIC |
 | Wire tracing, 11 photo conditions | 0.994 exact topology | SYNTHETIC |
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
 | Text → netlist, fresh 20 sentences (evaluated once) | 0.90 exact circuit | HAND-WRITTEN |
 | Text → netlist, Pawan's 20 sentences (T-7, evaluated once) | 0.75 exact circuit, component F1 0.986 | HAND-WRITTEN |
+| Text → netlist re-run after the 2026-11-04 fixes | Fresh 1.00 (optimistic), 30-sentence 1.00, Pawan's 0.75 unchanged | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
 | Training resume on Colab | Resumed across sessions with the saved gates | Real, T4 |
 | Demo app (`app.py`) | Starts, serves on localhost, processes a photo end to end (throwaway weights) | — |
@@ -109,10 +111,9 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 | # | Who | Action |
 |---|---|---|
 | 1 | Whoever runs Colab | Keep training running. After any disconnect: open the notebook from GitHub `main`, pick a T4 and **Run all**. Only one session at a time on the shared folder. |
-| 2 | Pawan | Cherry-pick Pranshu's `5137acd` onto `feature/Pawan` and open a PR (safe for the running training; see above). |
-| 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (a copy is saved to `MyDrive/CircuitVision/experiments/`). Claude updates `EXPERIMENTS.md` and the docs; the team fills the report by hand. |
-| 4 | Pawan | T-5 against the zip; demo prep per [`DEMO.md`](DEMO.md) (download `best.pt` and `models/` from Drive). |
-| 5 | Pranshu | Submission date for the report cover. |
+| 2 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (a copy is saved to `MyDrive/CircuitVision/experiments/`). Claude updates `EXPERIMENTS.md` and the docs; the team fills the report by hand. |
+| 3 | Pawan | T-5 against the zip; demo prep per [`DEMO.md`](DEMO.md) (download `best.pt` and `models/` from Drive). |
+| 4 | Pranshu | Submission date for the report cover. |
 
 ## Commands
 

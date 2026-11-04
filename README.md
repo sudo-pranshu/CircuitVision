@@ -33,7 +33,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
 bash scripts/pin_opencv.sh        # exactly one OpenCV build; run after every pip install
 brew install ngspice              # Linux: apt install ngspice
-pytest -q                         # ~125 tests, a few skip without ngspice
+pytest -q                         # 129 tests, a few skip without ngspice
 ```
 
 Only the base install is needed for wire tracing, netlists, grammar, simulation, NLP and the tests (`pip install -e ".[dev]"`). `detect` adds YOLO and EasyOCR (PyTorch); `app` adds Gradio. OpenCV is capped below 5, which has no `cv2.HOGDescriptor`.
@@ -91,7 +91,7 @@ The shell equivalents and the full configuration are in EXPERIMENTS.md.
 - **Two-terminal elements only.** Transistors, ICs, switches, lamps and similar symbols are out of scope: they're masked so they can't short wires, and metrics are also reported on images without them.
 - **Topology accuracy on real photos can't be measured exactly.** CGHD v14 has no ground-truth circuit graphs. On real data, topology is reported through proxies (terminal counts, and consistency across photos of the same drawing). Exact topology is measured only on synthetic data.
 - **The rotation convention must be confirmed at Gate 1.** Until then, polarity results are unverified, and mirrored polarized symbols are excluded.
-- **Text → netlist covers series/parallel descriptions.** It doesn't handle bridges or circuits that need named nodes, and it misses some phrasings: "330R", "a pair of".
+- **Text → netlist covers series/parallel descriptions.** It doesn't handle bridges or circuits that need named nodes, and it misses some sentence structures: 0.75 exact on a teammate's set written without seeing the parser (`results/nlp_eval_pawan.md`).
 - **The split differs from the CGHD paper's** (theirs tests on drafters 23–24), so results aren't directly comparable.
 
 ## Credits

@@ -30,13 +30,17 @@ UNIT_WORDS = {"ohm", "ohms", "v", "volt", "volts", "f", "farad", "h", "henry",
 
 
 RKM_RE = re.compile(r"^(\d+)([pnuµμmkKMGR])(\d+)(ohms?|Ω|[fFhHvV])?$")
+R_SUFFIX_RE = re.compile(r"^(\d+(?:\.\d+)?)R$")            # 330R = 330 ohm (BS 1852)
 VALUE_FULL_RE = re.compile(r"^(\d+(?:\.\d+)?)(meg|[pnuµμmkKMG])?(ohms?|Ω|[fFhHvV]|volts?)?$", re.I)
 
 
 def spice_value(text: str, cls: str) -> str | None:
     """'10k' -> '10k', '4.7uF' -> '4.7u', '1 M' (resistor) -> '1meg', '5V' -> 'DC 5',
-    '4k7' -> '4.7k', '2R2' -> '2.2'. Anything that is not wholly a value -> None."""
+    '4k7' -> '4.7k', '2R2' -> '2.2', '330R' -> '330'. Anything that is not wholly a value -> None."""
     t = text.replace(" ", "").replace(",", ".")
+    r = R_SUFFIX_RE.match(t)
+    if r:
+        return r.group(1) if cls == "resistor" else None
     r = RKM_RE.match(t)
     if r:
         pre = {"R": "", "µ": "u", "μ": "u", "K": "k", "M": "meg", "G": "g"}.get(r.group(2), r.group(2))
@@ -61,7 +65,9 @@ UNIT_CLASS = [("ohm", "resistor"), ("f", "capacitor"), ("h", "inductor"), ("v", 
 
 def class_from_unit(text: str) -> str | None:
     """'4.7uF' -> capacitor, '1mH' -> inductor, '220ohm' -> resistor, '5V' -> source,
-    '4k7' / '2R2' -> resistor."""
+    '4k7' / '2R2' / '330R' -> resistor."""
+    if R_SUFFIX_RE.match(text.replace(" ", "")):
+        return "resistor"
     if RKM_RE.match(text.replace(" ", "")):
         unit = RKM_RE.match(text.replace(" ", "")).group(4)
         unit_cls = {"f": "capacitor", "h": "inductor", "v": "voltage_source"}.get((unit or "").lower()[:1])
