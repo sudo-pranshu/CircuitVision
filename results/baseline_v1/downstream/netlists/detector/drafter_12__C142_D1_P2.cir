@@ -1,0 +1,5 @@
+* drafter_12/C142_D1_P2.jpg
+* ground: implicit: most connected net
+R1 0 2 1k
+.op
+.end

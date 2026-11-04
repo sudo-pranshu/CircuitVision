@@ -1,0 +1,9 @@
+* drafter_12/C137_D2_P1.jpg
+* ground: implicit: most connected net
+R1 0 6 2
+R2 0 6 1k
+R3 1 2 1k
+C1 2 0 1u
+* WARNING V1: found 3 terminals [1, 5, 6], skipped
+.op
+.end

@@ -6,21 +6,18 @@ Updated 2026-11-04 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE
 
 The pipeline (image → netlist → validation → simulation, plus text → netlist) is **implemented, tested and verified on synthetic data**.
 
-**The real CGHD experiment (baseline_v1) is training on Colab now.** No test metric exists yet, and the project is **not complete** until the test and downstream evaluations finish and the evidence zip is in. Everything that doesn't need those results is done: both gates were decided and independently reviewed, the reference netlists exist, scoring against them is merged, and the demo is ready except for the weights.
+**The real CGHD experiment (baseline_v1) has run** (Colab, 2026-11-04). Results are in [EXPERIMENTS.md](../EXPERIMENTS.md#results-baseline_v1), and the key files are in [`results/baseline_v1/`](../results/baseline_v1/).
 
-## baseline_v1 on Colab
-
-| Stage | State |
+| REAL CGHD, test drafter 12 | Result |
 |---|---|
-| Dataset | CGHD v14 cached on Drive, MD5-checked |
-| Gate 1 (rotation convention) | Approved: `PLUS_AT_0='left'`, `CGHD_CLOCKWISE=False`; `voltage.dc` corrected in `parse_voc` |
-| Gate 2 (label overlays) | Approved; the conversion matches the approved one on every resume |
-| Training (YOLOv8s, 100 epochs, T4) | **In progress.** Last epoch seen: 20/100, at about 4.5 min per epoch, so about 6 h of training left. It may finish in a second Colab account through the shared Drive folder; that resumes the same run. |
-| Test (drafter 12), downstream, tables, evidence zip | Run automatically after training |
+| Detection, 96 photos, 1,628 symbols | **mAP50 0.904, mAP50-95 0.611** (P 0.886, R 0.875); weakest class voltage source (AP50 0.48) |
+| Orientation | classifier: voltage source 0.906, diode 0.775; in the pipeline 0.833 (GT boxes) and 0.639 (detector) |
+| OCR on handwritten labels | 0.021 exact; only 4 labels are values, so value reading is effectively not measured |
+| **Correct circuit**, 48 analog photos, against the T-3 references | **37.5% with ground-truth boxes, 10.4% with detector boxes** |
 
-At epoch 20, the validation check on drafter 11 gave mAP50 0.925 and mAP50-95 0.600. This is **training monitoring only, not a result**: reportable numbers come only from the drafter-12 test in the evidence zip.
+Training stopped early at **epoch 73 of 100** (patience 30). The best epoch, **43**, is the one evaluated. It ran on a T4 for epochs 1–33 and an A100 for 34–73, with the same config. Half the test photos (C139–C144) are logic-gate diagrams with nothing to reconstruct. The main downstream failure is battery terminals in wire tracing, followed by OCR on handwriting (C-3, in EXPERIMENTS).
 
-When the zip arrives, confirm that `commit.txt` names a commit on `main`. Between 11:45 and 11:55 IST on 2026-11-04, `main` briefly held the sync-audit commits (see below). A session started in that window would have recorded them, though they don't change training or the label conversion.
+**What's left:** T-5 (report numbers against `results/baseline_v1/`), T-6 (re-run the tables on a clean machine), the hand-filled report, and demo prep with the real weights.
 
 ## Sync audit by Pranshu (2026-11-04)
 
@@ -65,7 +62,7 @@ The submission report (Word, institute template, 48 pages) is built from [`repor
 | Text → netlist, Pawan's 20 sentences (T-7, evaluated once) | 0.75 exact circuit, component F1 0.986 | HAND-WRITTEN |
 | Text → netlist re-run after the 2026-11-04 fixes | Fresh 1.00 (optimistic), 30-sentence 1.00, Pawan's 0.75 unchanged | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
-| Training resume on Colab | Resumed across sessions with the saved gates | Real, T4 |
+| Training resume on Colab | Resumed across six sessions and two GPUs (T4, then A100) with the saved gates | Real |
 | Demo app (`app.py`) | Starts, serves on localhost, processes a photo end to end (throwaway weights) | — |
 
 ## Reproduced by the teammate (T-1, 2026-11-02)
@@ -88,8 +85,8 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 
 ## Not tested
 
-- YOLO detection, orientation, OCR and topology on real photos (waiting on the run).
-- The Gradio demo with real weights.
+- The Gradio demo with the real weights (`best.pt` and `models/` are on Drive, not in the zip).
+- Value reading on real handwritten values: drafter 12 has only 4 value labels.
 
 ## Tasks
 
@@ -101,19 +98,21 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 | T-4 | Literature review | Done: report Chapter 2, sources reviewed by Pawan |
 | T-7 | New frozen NLP test set | Done: 20 sentences, evaluated once, 0.75 (PR #8) |
 | C-4 | Score against the reference netlists | Done (PR #10); runs in the Colab downstream step |
-| P-4, P-5 | Finish training, then test, downstream and evidence zip | In progress |
-| C-2 | Update `EXPERIMENTS.md` and the docs from the zip | Waits on the zip |
-| T-5 | Check the report's numbers against the zip | Waits on the zip |
-| T-6 | Re-run `report_tables` from the zip on a clean machine | Waits on the zip; someone other than the Colab runner |
+| P-4, P-5 | Training, test, downstream, evidence zip | Done 2026-11-04 (early stop at epoch 73, best 43) |
+| C-2 | `EXPERIMENTS.md` and the docs from the zip | Done: results section; key files in `results/baseline_v1/` |
+| C-3 | Error analysis of detector and downstream failures | Done in EXPERIMENTS (battery terminals, wire gaps, label text as values, detector false positives) |
+| T-5 | Check the report's numbers against `results/baseline_v1/` | Next: Pawan |
+| T-6 | Re-run `report_tables` from the zip on a clean machine | Next: someone other than the person who ran the last Colab session |
 
 ## Next actions
 
 | # | Who | Action |
 |---|---|---|
-| 1 | Whoever runs Colab | Keep training running. After any disconnect: open the notebook from GitHub `main`, pick a T4 and **Run all**. Only one session at a time on the shared folder. |
-| 2 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (a copy is saved to `MyDrive/CircuitVision/experiments/`). Claude updates `EXPERIMENTS.md` and the docs; the team fills the report by hand. |
-| 3 | Pawan | T-5 against the zip; demo prep per [`DEMO.md`](DEMO.md) (download `best.pt` and `models/` from Drive). |
-| 4 | Pranshu | Submission date for the report cover. |
+| 1 | Team | Fill the report's PENDING values by hand from [`results/baseline_v1/tables.md`](../results/baseline_v1/tables.md) and EXPERIMENTS (Results: baseline_v1), including the early stop, the hardware note and the analog-photo base. |
+| 2 | Pawan | T-5: check every report number against `results/baseline_v1/`. |
+| 3 | Pawan or Pranshu | T-6: `python -m circuitvision.report_tables --exp <unzipped evidence> --out tables.md` on a clean machine; it must match `results/baseline_v1/tables.md`. |
+| 4 | Pawan | Demo prep per [`DEMO.md`](DEMO.md): download `best.pt` and `models/` from `MyDrive/CircuitVision/experiments/baseline_v1/`. |
+| 5 | Pranshu | Submission date for the report cover. |
 
 ## Commands
 

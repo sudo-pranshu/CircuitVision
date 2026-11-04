@@ -1,0 +1,77 @@
+{
+ "config": {
+  "model": "yolov8s.pt",
+  "epochs": 100,
+  "imgsz": 1024,
+  "batch": 16,
+  "optimizer": "SGD",
+  "lr0": 0.01,
+  "lrf": 0.01,
+  "momentum": 0.937,
+  "weight_decay": 0.0005,
+  "warmup_epochs": 3,
+  "patience": 30,
+  "seed": 0,
+  "deterministic": true,
+  "fliplr": 0.5,
+  "flipud": 0.5,
+  "degrees": 5.0,
+  "scale": 0.5,
+  "translate": 0.1,
+  "hsv_h": 0.0,
+  "hsv_s": 0.3,
+  "hsv_v": 0.4,
+  "mosaic": 1.0,
+  "close_mosaic": 10
+ },
+ "data": "/content/yolo/dataset.yaml",
+ "environment": {
+  "python": "3.13.16",
+  "torch": "2.11.0+cu130",
+  "ultralytics": "8.4.184",
+  "device": "0",
+  "gpu": "Tesla T4"
+ },
+ "dataset": {
+  "train": {
+   "images": 2981,
+   "objects": 210782,
+   "text": 87998,
+   "junction": 76361,
+   "resistor": 15016,
+   "diode": 5335,
+   "inductor": 1846,
+   "voltage_source": 955,
+   "gnd": 5381,
+   "capacitor": 7832,
+   "crossover": 10058
+  },
+  "val": {
+   "images": 96,
+   "objects": 4032,
+   "text": 1736,
+   "junction": 1448,
+   "resistor": 232,
+   "diode": 216,
+   "crossover": 40,
+   "voltage_source": 32,
+   "capacitor": 160,
+   "inductor": 96,
+   "gnd": 72
+  },
+  "test": {
+   "images": 96,
+   "objects": 1628,
+   "text": 656,
+   "junction": 720,
+   "capacitor": 32,
+   "inductor": 24,
+   "voltage_source": 32,
+   "resistor": 56,
+   "crossover": 68,
+   "diode": 40
+  }
+ },
+ "best_checkpoint": "/content/drive/MyDrive/CircuitVision/experiments/baseline_v1/runs/train/weights/best.pt",
+ "completed": true
+}

@@ -1,0 +1,42 @@
+{
+ "convention": {
+  "PLUS_AT_0": "left",
+  "CGHD_CLOCKWISE": false,
+  "source": "environment (set after Gate 1)"
+ },
+ "test_drafters": [
+  "drafter_12"
+ ],
+ "classes": {
+  "voltage_source": {
+   "train_crops": 836,
+   "train_samples": 3344,
+   "train_label_counts": {
+    "0": 836,
+    "90": 836,
+    "180": 836,
+    "270": 836
+   },
+   "test_crops": 32,
+   "test_accuracy_real": 0.90625,
+   "test_accuracy_rotated": 0.953125
+  },
+  "diode": {
+   "train_crops": 5013,
+   "train_samples": 20052,
+   "train_label_counts": {
+    "0": 5013,
+    "90": 5013,
+    "180": 5013,
+    "270": 5013
+   },
+   "test_crops": 40,
+   "test_accuracy_real": 0.775,
+   "test_accuracy_rotated": 0.75
+  }
+ },
+ "skipped_train": {
+  "no_rotation": 689
+ },
+ "skipped_test": {}
+}
