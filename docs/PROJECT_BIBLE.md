@@ -754,7 +754,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 |---|---|---|---|---|---|---|
 | T-1 | Done by Pawan, 2026-11-02. Onboarding: §15 checklist, then reproduce the test suite and the synthetic results | P0 | — | Laptop | Confirmation in `PROJECT_STATUS.md` | `pytest` passes; `results/tables.md` regenerates identically |
 | T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so a different reviewer was needed. Done: Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)) | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
-| T-3 | Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
+| T-3 | Done 2026-11-04: all 12 drafter-12 drawings with in-scope parts (C133–C138, D1 and D2; C139–C144 are logic gates). Drafted by Claude from the photos without running the pipeline, then checked against the photos by Pawan. Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
 | T-4 | Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
 | T-5 | Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
 | T-6 | Reproducibility check: re-run `report_tables` from the evidence zip on a clean machine | P1 | P-5 | Laptop | Identical `tables.md` | Diff is empty |
@@ -818,7 +818,7 @@ Figures generated from artifacts: `results.png` (training curves), the confusion
 | Simulation | DC operating point only; no AC/transient; default values when OCR fails | Defaults recorded as defaults | Accepted scope | Add analyses on request |
 | NLP generalisation | Series/parallel only; misses "330R" and "a pair of"; trained on templates | Fresh test set measured honestly | Known | Larger hand-written training data |
 | Small evaluation sets | 20–30 sentences; 6–18 synthetic images | Labelled as such | Known | Larger frozen sets |
-| Real topology ground truth | CGHD v14 has no circuit graphs, so real topology is only measured by proxies | Terminal-count and consistency proxies | Unresolved | Hand-made references (T-3) |
+| Real topology ground truth | CGHD v14 has no circuit graphs, so real topology is only measured by proxies | Terminal-count and consistency proxies | References exist for 12 drawings (T-3); scoring needs C-4 | Score against `references/drafter_12` (C-4) |
 | Hardware | Training needs a GPU; a CPU smoke test needs batch 2 | Colab T4 | Accepted | — |
 
 ---
