@@ -65,7 +65,7 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 | 2 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
 | 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
 | 4 | Done | Independent review of the Gate 1 and Gate 2 evidence (T-2): Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)). |
-| 5 | Teammate | After step 3, check the report's numbers against `results/` and the evidence zip (T-5). T-3 is done: 12 reference netlists in [`references/`](../references/README.md), drafted by Claude from the photos and checked by Pawan. Scoring against them (C-4) is next. |
+| 5 | Teammate | After step 3, check the report's numbers against `results/` and the evidence zip (T-5). T-3 is done: 12 reference netlists in [`references/`](../references/README.md), drafted by Claude from the photos and checked by Pawan; C-4 scores against them in the Colab run. T-4 is done: the related-work section is report Chapter 2, with sources reviewed by Pawan. |
 
 ## Commands
 
