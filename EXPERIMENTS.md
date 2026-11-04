@@ -10,7 +10,7 @@ Every result carries one of three labels: **REAL CGHD**, **SYNTHETIC/CONTROLLED*
 | Wire tracing on synthetic photos with known graphs: 0.994 exact over 11 conditions | SYNTHETIC/CONTROLLED | `results/synthetic_topology.json` |
 | GT-box pipeline on CGHD-shaped synthetic data: 18/18 topology, exact and operating-point match | SYNTHETIC/CONTROLLED | Run log below; reproducible with `synth --write-cghd` |
 | EasyOCR on synthetic value labels: 0.914 exact, 0.950 character accuracy | SYNTHETIC/CONTROLLED | Same run |
-| Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90; Pawan's 20-sentence set (T-7) 0.75. Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), others unchanged | CONTROLLED (hand-written) | `results/nlp_eval*.json`, `results/nlp_rerun_2026-11-04/` |
+| Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90; Pawan's 20-sentence set (T-7) 0.75 | CONTROLLED (hand-written) | `results/nlp_eval*.json` |
 | `train.py`, `detector_eval.py`, `evaluate.py --weights --ocr`, `orientation.py`, `report_tables.py` | Executed end to end on CPU (torch 2.14, ultralytics 8.4.184) | Synthetic data only; numbers carry no meaning about real photos |
 | CGHD audit, rotation convention (`PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`), label overlays | REAL CGHD (dataset checks, no model metric) | Run locally on the MD5-checked v14 zip, 2026-11-02; Gates 1 and 2 approved by Pawan. See the findings below |
 | YOLOv8s detection on test drafter 12 | UNTESTED | Awaiting the Colab run |
@@ -71,8 +71,8 @@ The image pass runs on all CPUs and prints `Audited N/total images` every 100 im
 `notebooks/train_colab.ipynb` contains two gate cells whose `assert` stops execution, including under "Run all", until you approve them.
 
 - **Gate 1, after the audit and rotation sheets:** set `GATE1_APPROVED`, plus `PLUS_AT_0` and `CGHD_CLOCKWISE` as read from the real sheets. The cell exports them as `CIRCUITVISION_PLUS_AT_0` and `CIRCUITVISION_CGHD_CLOCKWISE`, and every later step records which convention it used and its source.
-  - Decided on 2026-11-02 from the real sheets (`PLUS_AT_0='left'`, `CGHD_CLOCKWISE=False`) and reviewed on 2026-11-04 (issue #7). These are now the code defaults, and the gate cell is prefilled with them; a person still has to check the sheets and set `GATE1_APPROVED`.
-  - If the sheets are inconclusive, set the convention to `None`. Orientation is then skipped and reported as UNTESTED.
+  - The code defaults are **unverified** assumptions.
+  - If the sheets are inconclusive, leave the convention as `None`. Orientation is then skipped and reported as UNTESTED.
 - **Gate 2, after the label overlays:** set `GATE2_APPROVED` only if the boxes visibly sit on their symbols.
 
 Both approvals are saved, with your notes, to `gates/gate1.json` and `gates/gate2.json`. After a runtime restart the gate cells load these files instead of asking again; delete a file to re-decide that gate. If the label conversion differs in any way from the one approved at Gate 2, the conversion cell stops.
@@ -212,14 +212,6 @@ downstream pipeline on synthetic drafter 12 (6 images). `results/synthetic_detec
 Orientation on held-out drafter 12: 5/5. OCR: 0.958 exact, 0.990 character accuracy (24 labels).
 This only shows that detector mode runs end to end and that detection errors propagate as expected.
 It says nothing about real photos.
-
-### Re-check after the teammate's changes (2026-11-04, SYNTHETIC)
-
-The synthetic GT-box run above was repeated on Linux (Python 3.13, ngspice 42) after PRs #5–#11, with orientation models trained on the synthetic tree: 18/18 valid, simulated, and matching their references on topology, values and operating point; OCR 0.914 exact and 0.950 character accuracy over 70 labels; orientation 18/18. Identical to the October run.
-
-### NLP fixes and re-run (2026-11-04, HAND-WRITTEN)
-
-"330R" (330 ohm) is now read as a value in both the text path and the image path, and "a pair of" counts as two. Both gaps were found by the fresh 20-sentence set, so its re-run score (1.000) is optimistic; the once-evaluated 0.900 remains the reported number. The teammate's set is unchanged at 0.750. See `results/nlp_rerun_2026-11-04/README.md`.
 
 ## Results: baseline_v1
 

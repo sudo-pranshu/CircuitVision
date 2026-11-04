@@ -41,12 +41,6 @@ def load(path=EVAL):
     return [json.loads(l) for l in Path(path).read_text().splitlines() if l.strip()]
 
 
-def kept(tokens):
-    """Gold tokens minus punctuation the tokenizer drops by design (a final '.'),
-    so a sentence typed with a full stop is not counted as a tokenization error."""
-    return [t for t in tokens if tokenize(t)]
-
-
 def evaluate(items, tagger=None) -> dict:
     tagger = tagger or load_tagger()
     gold_tags = [it["tags"] for it in items]
@@ -70,7 +64,7 @@ def evaluate(items, tagger=None) -> dict:
         comp["tp"] += sum((g & p).values()); comp["fp"] += sum((p - g).values()); comp["fn"] += sum((g - p).values())
         if not row["exact"]:
             row["error_type"] = ("exception" if "error" in row else
-                                 "tokenization" if tokenize(it["text"]) != kept(it["tokens"]) else
+                                 "tokenization" if tokenize(it["text"]) != it["tokens"] else
                                  "tagging" if row["tag_errors"] else
                                  "source" if row["tree"] == it["tree"] else
                                  "components/values" if g != p else "structure")

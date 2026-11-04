@@ -4,8 +4,8 @@ The permanent technical reference, onboarding guide and handover document for Ci
 
 | | |
 |---|---|
-| Last updated | 2026-11-04 |
-| Written against commit | `c3dfdb1` on `main`; §8.1 and §9–11 updated to `29f08a4`; §3, §4.4, §5, §7 and §9–14 updated to `5137acd` (2026-11-04 sync audit) |
+| Last updated | 2026-11-02 |
+| Written against commit | `c3dfdb1` on `main`; §8.1 and §9–11 updated to `29f08a4` |
 | Owner | Pranshu Kumar (VJTI, B.Tech EXTC, AI/ML minor) |
 | Repository | https://github.com/sudo-pranshu/CircuitVision (public) |
 | Day-to-day status | [`PROJECT_STATUS.md`](PROJECT_STATUS.md). Read that first for "what's happening now". |
@@ -239,7 +239,7 @@ CircuitVision/
 ├── results/                  committed, small, synthetic/controlled results only
 ├── src/circuitvision/        the package (see table below)
 │   └── nlp/                  text → netlist
-└── tests/                    pytest suite (129 tests at 5137acd)
+└── tests/                    pytest suite (110 tests at 29f08a4)
     ├── data/cghd_real/       ONE real CGHD annotation (C145_D1_P1.xml), CC BY 3.0
     └── fake_cghd.py          tiny CGHD-format fixture generator
 ```
@@ -333,7 +333,7 @@ During conversion, images with an EXIF tag other than 1 are re-encoded without E
 
 - **Internally,** `rotation` is in degrees counter-clockwise, one of 0/90/180/270. At rotation 0 the positive terminal (diode anode, source +) is on side `PLUS_AT_0`.
 - **CGHD's** `<rotation>` is rounded to the nearest 90° by `from_cghd`, and negated if `CGHD_CLOCKWISE`.
-- **Configuration:** the environment variables `CIRCUITVISION_PLUS_AT_0` (left/right/top/bottom) and `CIRCUITVISION_CGHD_CLOCKWISE` (0/1). The code defaults (`left`, counter-clockwise) are the **Gate 1 decision** of 2026-11-02, reviewed 2026-11-04 (issue #7), and outputs label them as such. `voltage.dc` is the one exception (labelled 0° with + on top); `parse_voc` adds 270° to it, and a malformed value is treated as missing.
+- **Configuration:** the environment variables `CIRCUITVISION_PLUS_AT_0` (left/right/top/bottom) and `CIRCUITVISION_CGHD_CLOCKWISE` (0/1). **The code defaults (`left`, counter-clockwise) are unverified assumptions.** The real values are set at **Gate 1** from the real rotation sheets and the dataset's own scripts.
 - **What is already known:** in real annotations, wide resistor boxes have rotation ≈ 0 and tall ones ≈ 90, so 0° means horizontal for resistors. The direction of rotation and the + side cannot be read from box shapes.
 - **Mirrored polarized symbols** are excluded from orientation training and scoring, and counted.
 - **Classifier:** 64×64 squared grayscale crop → HOG (16×16 blocks, 8×8 cells, 9 bins) → OpenCV linear SVM. There is one model per polarized class. Every training crop is also rotated by 90, 180 and 270 degrees, with the label shifted to match.
@@ -568,7 +568,7 @@ bash scripts/pin_opencv.sh                 # always last
 brew install ngspice                       # Linux: sudo apt install ngspice
 
 # tests
-pytest -q                                  # 129 tests at 5137acd
+pytest -q                                  # 110 tests at 29f08a4
 
 # image → netlist with ground-truth boxes (no model needed); writes out/divider.cir and an overlay
 python -m circuitvision.pipeline examples/divider.png --xml examples/divider.xml --simulate
@@ -686,12 +686,6 @@ The dates and hashes are from `git log`. "Tests" means the pytest suite at that 
 | 2026-11-02 | `00c7e88` | **Real label fixes** from Gates 1 and 2: placeholder XML sizes and the `voltage.dc` rotation; 3 more regression tests (110 in all) | `cghd_to_yolo.py`, `test_cghd_format.py`, `EXPERIMENTS.md` | REAL CGHD dataset checks on the MD5-checked v14 zip |
 | 2026-11-02 | `cb1eadb` | **Gate 1 and Gate 2 decisions** recorded | `docs/PROJECT_BIBLE.md` | Decided by Pawan |
 | 2026-11-02 | `29f08a4` | **PR #5 merged**, so the notebook now clones the label fixes | — | — |
-| 2026-11-04 | `250611e` | **T-2:** Pranshu's independent review of Gates 1 and 2 recorded (issue #7) | docs | Review |
-| 2026-11-04 | `0dda609`, `0645bc5` | **T-7:** Pawan's 20-sentence NLP set frozen and evaluated once: 0.75 exact | `handwritten_pawan.jsonl`, `results/nlp_eval_pawan.*` | HAND-WRITTEN |
-| 2026-11-04 | `89fbd56`, `e438023`, `ea750f4` | **T-3:** 12 drafter-12 reference netlists, drafted with Claude from the photos and checked by Pawan | `references/`, `tests/test_references.py` | REAL CGHD photos (no model) |
-| 2026-11-04 | `36312d3` | **C-4:** downstream netlists scored against the repo references | `evaluate.py`, `report_tables.py`, `test_evaluate.py` | Unit tests |
-| 2026-11-04 | `5eab2ae`, `175555e`, `52a57d0` | Report updated (125 tests, teammate set, references); T-4 done; demo script; no slides | `report/`, `docs/DEMO.md` | — |
-| 2026-11-04 | `5137acd` | **Sync audit fixes:** malformed `voltage.dc` rotation, "330R" in both paths, "a pair of", NLP error categories, Gate 1 prefilled, convention label, teammate set in `tables.md`; 4 regression tests (129) | `cghd_to_yolo.py`, `netlist.py`, `nlp/`, notebook, `report_tables.py` | Synthetic GT-box run re-checked; NLP re-run (fresh set optimistic) |
 
 **Not yet measured:** detection, OCR and topology on real CGHD images, and baseline_v1 as a whole. Orientation has only the local drafter-12 check in `EXPERIMENTS.md`, not a baseline result. The full audit and rotation convention were checked on the real dataset on 2026-11-02 (§10).
 
@@ -705,9 +699,9 @@ Status as of `29f08a4`. Passing unit tests is **not** a real-photo result.
 
 | Item | Status | Evidence |
 |---|---|---|
-| Repository | COMPLETE | Public; PRs #1–#11 merged; every remote branch is merged into `main` (checked 2026-11-04) |
+| Repository | COMPLETE | Public, PRs #1–#5 merged, no open PRs |
 | Installation | COMPLETE | Extras pinned; `pin_opencv.sh`; installed in a clean venv |
-| Tests | COMPLETE | 129 pass (`pytest -q`, Linux, Python 3.13, ngspice 42, 2026-11-04); 125 passed on Pawan's macOS before the audit fixes |
+| Tests | COMPLETE | 110 pass (`pytest -q`, macOS, ngspice present) |
 | Dataset download | IN PROGRESS | Automated and MD5-checked in the notebook. An earlier Colab session reached the download and audit, but whether the zip is cached on the owner's Drive is **not verified from here**. |
 | Dataset audit | COMPLETE | Run by Pawan on the MD5-checked v14 zip on a Mac, 2026-11-02; the Colab run repeats it |
 | Annotation verification | COMPLETE | Full-dataset audit and Gate 2 overlays; found the placeholder XML sizes, now fixed |
@@ -715,15 +709,15 @@ Status as of `29f08a4`. Passing unit tests is **not** a real-photo result.
 | Label conversion | COMPLETE | Gate 2 decided by Pawan, 2026-11-02, after the placeholder-size fix |
 | YOLO training | NOT STARTED | Label fixes merged in PR #5. Ready for a Colab T4 run, and none is recorded in the repository; config fixed in `train.BASELINE` |
 | Detector evaluation | BLOCKED | Waits on training; tooling tested on synthetic data |
-| Orientation evaluation | BLOCKED | Gate 1 is decided and prefilled in the notebook; waits on the Colab run. SYNTHETIC: 5/5 on held-out synthetic drafter 12 |
-| Topology evaluation | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | SYNTHETIC: 0.994 exact over 11 conditions; GT-box end to end 18/18 (re-checked 2026-11-04). Real: 12 drafter-12 reference netlists exist (T-3) and `evaluate.py` scores against them (C-4); runs in the Colab experiment |
+| Orientation evaluation | BLOCKED | Gate 1 is decided; waits on the Colab run. SYNTHETIC: 5/5 on held-out synthetic drafter 12. |
+| Topology evaluation | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | SYNTHETIC: 0.994 exact over 11 conditions. Real topology can only be measured through proxies until hand-made reference netlists exist. |
 | OCR evaluation | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | SYNTHETIC: 0.958 exact / 0.990 character accuracy (24 labels) |
 | Netlist generation | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Unit tests and synthetic end to end |
 | Grammar validation | COMPLETE | Deterministic; unit-tested; input-independent |
 | ngspice simulation | COMPLETE | Unit-tested; operating points match references on synthetic data |
-| NLP evaluation | COMPLETE | Fresh set 0.90 and Pawan's set 0.75 exact (HAND-WRITTEN, 20 sentences each, evaluated once). Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), Pawan's unchanged |
+| NLP evaluation | COMPLETE | Fresh set 0.90 exact (HAND-WRITTEN, 20 sentences) |
 | Gradio application | IMPLEMENTED BUT NOT REAL-DATA VERIFIED | Handler exercised with a synthetic model; needs real weights |
-| Final report | IN PROGRESS | Word report (48 pages) built from `report/`; updated 2026-11-04 with the gate decisions, dataset findings, new defects and NLP re-run. Real-results §6.3 is pending and is filled in by hand by the team |
+| Final report | IN PROGRESS | Word report in the institute template is built from `report/`; real-results section 6.3 is pending |
 | Presentation | NOT NEEDED | No slide deck will be presented (decided 2026-11-04) |
 | Final demonstration | READY EXCEPT WEIGHTS | Script in [`DEMO.md`](DEMO.md); app checked on 2026-11-04 (starts, serves, processes a photo); needs `best.pt` and `models/` from Drive |
 
@@ -748,10 +742,10 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 
 | ID | Task | Pri | Depends on | Output | Acceptance |
 |---|---|---|---|---|---|
-| C-1 | Done: Gate 1 decided by Pawan from the real sheets (2026-11-02) and reviewed by Pranshu (issue #7); now the code default and prefilled in the notebook | P0 | P-1 | Written recommendation citing the sheets and loader | Owner approves or overrides |
+| C-1 | Review the Gate 1 evidence and recommend a convention | P0 | P-1 | Written recommendation citing the sheets and loader | Owner approves or overrides |
 | C-2 | Update `EXPERIMENTS.md` and the docs from the evidence zip. The report's §6.3 and other PENDING values are filled in by hand by the team (decided 2026-11-04); there are no slides | P0 | P-5 | Updated report, deck and docs | Every number traceable to a file in the zip |
 | C-3 | Error analysis of detector and downstream failures on drafter 12 | P1 | P-5 | Report section and figures | Uses `test/qualitative/` and `downstream/*.csv` |
-| C-4 | Done by Pawan, 2026-11-04 (`36312d3`): `find_reference` and `compare_to_reference` in `evaluate.py`, tables in `report_tables.py`, tests in `test_evaluate.py` | P1 | T-3 | Small change in `evaluate.py` plus a test | Real `topology_match` reported where references exist |
+| C-4 | Support for reference netlists stored in the repo for drafter 12 (from T-3) | P1 | T-3 | Small change in `evaluate.py` plus a test | Real `topology_match` reported where references exist |
 | C-5 | Bug fixes and regression tests for anything the real run exposes | P0 | P-1…P-5 | PRs | `pytest` green; the fix is tested |
 
 ### 11.3 Tasks for the teammate
@@ -780,8 +774,6 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | NLP, 30-sentence after changes | 2026-10-23 | `fdc275c` | Same set | — | CPU | Exact 1.000 (**optimistic**: same errors were fixed) | [`results/nlp_eval.md`](../results/nlp_eval.md) | HAND-WRITTEN |
 | NLP, fresh 20-sentence set | 2026-10-23 | `db1385f` | `handwritten_fresh.jsonl` | — | CPU | Token accuracy 1.000, exact 0.900, component F1 0.972; failures: "330R", "a pair of" | [`results/nlp_eval_fresh.md`](../results/nlp_eval_fresh.md) | HAND-WRITTEN |
 | NLP, Pawan's 20-sentence set (T-7) | 2026-11-04 | `0dda609` | `handwritten_pawan.jsonl` | — | CPU | Token accuracy 0.994, exact 0.750, component F1 0.986, netlists valid 1.000; failures: "across both of them", "through", a parallel group before "connected in series with", "in parallel across the LED", "across the second resistor" | [`results/nlp_eval_pawan.md`](../results/nlp_eval_pawan.md) | HAND-WRITTEN |
-| NLP re-run after fixes | 2026-11-04 | `5137acd` | All three hand-written sets | "330R", "a pair of", error-category fix | CPU | Fresh 1.000 (**optimistic**: fixes target its 2 failures); 30-sentence 1.000; Pawan's 0.750 unchanged | [`results/nlp_rerun_2026-11-04/`](../results/nlp_rerun_2026-11-04/README.md) | HAND-WRITTEN |
-| GT-box re-check after PRs #5–#11 | 2026-11-04 | `5137acd` | Synthetic drafters 10–12 (18 images) | GT boxes, synthetic orientation models | CPU (Linux) | 18/18 topology, exact and op match; OCR 0.914 / 0.950; orientation 18/18 | `EXPERIMENTS.md` | SYNTHETIC |
 | NLP synthetic corpus | 2026-10-23 | `fdc275c` | Test split from the training templates; separate held-out phrasings | — | CPU | Same templates: token accuracy 1.000, exact 1.000. Held-out phrasings: token accuracy 0.897, exact 0.980. | [`results/nlp_synthetic.txt`](../results/nlp_synthetic.txt) | SYNTHETIC |
 | Orientation, OCR, topology on real photos | — | — | CGHD drafter 12 | — | — | — | — | **UNTESTED** |
 
@@ -793,7 +785,7 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 
 | Deliverable | Where | Status | Pending |
 |---|---|---|---|
-| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 48 pages; updated 2026-11-04 | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
+| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 47 pages | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
 | Earlier report draft | Claude Docs artifact, private: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn | Superseded by the Word report | — |
 | Slide deck (14 slides) | Claude Slides artifact: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD | Not presented (decided 2026-11-04) | — |
 | Live demo | [`DEMO.md`](DEMO.md) | Ready except the trained weights | `best.pt` and `models/` from Drive |
@@ -825,9 +817,9 @@ Figures generated from artifacts: `results.png` (training curves), the confusion
 | Implicit ground | Picks a reference node when there's no ground symbol | Rule recorded in every netlist; comparison is ground-independent | Accepted | — |
 | Graph matching | Isomorphism by backtracking: exponential in the worst case | Circuits are small (tens of nets) | Accepted | — |
 | Simulation | DC operating point only; no AC/transient; default values when OCR fails | Defaults recorded as defaults | Accepted scope | Add analyses on request |
-| NLP generalisation | Series/parallel only; trained on templates; misses less common structures ("across both of them", "through", a parallel group before "in series with") | Two independent sets measured once (0.90, 0.75). "330R" and "a pair of" fixed 2026-11-04 | Known | Larger hand-written training data |
+| NLP generalisation | Series/parallel only; misses "330R" and "a pair of"; trained on templates | Fresh test set measured honestly | Known | Larger hand-written training data |
 | Small evaluation sets | 20–30 sentences; 6–18 synthetic images | Labelled as such | Known | Larger frozen sets |
-| Real topology ground truth | CGHD v14 has no circuit graphs | 12 hand-checked reference netlists (T-3), scored by C-4; proxies for the rest | Ready; only C137 is complete enough for an operating-point match | More references |
+| Real topology ground truth | CGHD v14 has no circuit graphs, so real topology is only measured by proxies | Terminal-count and consistency proxies | References exist for 12 drawings (T-3); scoring needs C-4 | Score against `references/drafter_12` (C-4) |
 | Hardware | Training needs a GPU; a CPU smoke test needs batch 2 | Colab T4 | Accepted | — |
 
 ---

@@ -67,12 +67,8 @@ def parse_voc(xml_path: Path, raw: bool = False, keep_other: bool = False):
         rotation = _field(o, "rotation")
         if not raw and name == "voltage.dc" and rotation is not None:
             # Gate 1: voltage.dc is labelled 0 with + on top, every other polarized
-            # symbol has + on the left at 0, which puts + on top at 270.
-            # A malformed value is left as is: from_cghd() turns it into None.
-            try:
-                rotation = str((float(rotation) + 270) % 360)
-            except ValueError:
-                pass
+            # symbol has + on the left at 0, which puts + on top at 270
+            rotation = str((float(rotation) + 270) % 360)
         objs.append(VocObject(cls, x1, y1, x2, y2, o.findtext("text"), rotation, mirror))
     return w, h, objs
 

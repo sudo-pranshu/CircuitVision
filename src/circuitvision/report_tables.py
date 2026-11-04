@@ -113,9 +113,7 @@ def synthetic_tables(results: Path) -> list[str]:
           "|---|---|---|---|---|---|---|---|"]
     for name, label in (("nlp_eval_baseline", "30-sentence set, baseline (before NLP changes)"),
                         ("nlp_eval", "30-sentence set, after changes (optimistic: same error categories)"),
-                        ("nlp_eval_fresh", "fresh 20-sentence set, evaluated once"),
-                        ("nlp_eval_pawan", "teammate's 20-sentence set (T-7), evaluated once"),
-                        ("nlp_rerun_2026-11-04/fresh", "fresh set re-run after the 2026-11-04 fixes (optimistic)")):
+                        ("nlp_eval_fresh", "fresh 20-sentence set, evaluated once")):
         r = _load(results / f"{name}.json")
         if r:
             L.append(f"| {label} | {r['sentences']} | {_f(r['tagging']['token_accuracy'])} | "

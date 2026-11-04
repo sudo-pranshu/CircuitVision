@@ -83,23 +83,3 @@ def test_frozen_eval_set_is_well_formed():
     from circuitvision.nlp.evaluate import load
     items = load()
     assert len(items) == 30 and all(len(i["tokens"]) == len(i["tags"]) for i in items)
-
-
-def test_trailing_r_and_a_pair_of():
-    from circuitvision.nlp.text2netlist import text_to_netlist
-    net, _, errs = text_to_netlist("a 9 volt battery with a 330R resistor and an LED in series")
-    assert errs == [] and "R1 1 2 330\n" in net
-    net, _, errs = text_to_netlist("a pair of 10k resistors in parallel")
-    assert errs == [] and net.count(" 10k\n") == 2
-
-
-def test_full_stop_is_not_a_tokenization_error():
-    from circuitvision.nlp.evaluate import evaluate
-    item = {"id": 1, "text": "Two 1k resistors in series with a 2k resistor, all in parallel with a 3k resistor.",
-            "tokens": ["Two", "1k", "resistors", "in", "series", "with", "a", "2k", "resistor", ",", "all", "in",
-                       "parallel", "with", "a", "3k", "resistor", "."],
-            "tags": ["O", "VAL", "RES", "O", "SER", "O", "O", "VAL", "RES", "SEP", "O", "O", "PAR", "O", "O",
-                     "VAL", "RES", "O"],
-            "source": None, "tree": "S(resistor:9k)"}                      # deliberately wrong gold tree
-    row = evaluate([item])["sentences_detail"][0]
-    assert not row["exact"] and row["error_type"] != "tokenization"

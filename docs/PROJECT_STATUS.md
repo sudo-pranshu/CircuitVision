@@ -1,6 +1,6 @@
 # CircuitVision: Project Status
 
-Updated 2026-11-04 (sync audit) · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE.md)
+Updated 2026-11-02 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE.md)
 
 ## Summary
 
@@ -21,31 +21,18 @@ The pipeline (image → netlist → validation → simulation, plus text → net
 
 ## Final report
 
-The submission report (Word, institute template, 48 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Updated 2026-11-04 with the Gate 1 and 2 decisions, the full-dataset findings, the new defects, the NLP re-run and 129 tests. Every real-CGHD value is highlighted `PENDING: real CGHD run` (§6.3 and a few sentences); the cover's date of submission is also a highlighted placeholder. After the Colab run, the team fills in the pending values by hand from the evidence files (decided 2026-11-04). There is no slide deck.
+The submission report (Word, institute template, 47 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Every real-CGHD value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences; the cover's date of submission is also a highlighted placeholder. After the Colab run, the team fills in the pending values by hand from the evidence files (decided 2026-11-04). There is no slide deck. The report still gives the earlier count of 107 tests, in the text and in the per-file test table; update these at the same time.
 
 ## Tested
 
 | What | Result | Label |
 |---|---|---|
-| Unit and regression tests | 129 pass (`pytest -q`, Linux, Python 3.13, ngspice 42, 2026-11-04) | — |
-| GT-box end to end, synthetic drafters 10–12, re-run after PRs #5–#11 | 18/18 topology, exact and op match; OCR 0.914 / 0.950; orientation 18/18 | SYNTHETIC |
+| Unit and regression tests | 110 pass (`pytest -q`, macOS, ngspice present) | — |
 | Wire tracing, 11 photo conditions | 0.994 exact topology | SYNTHETIC |
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
 | Text → netlist, fresh 20 sentences (evaluated once) | 0.90 exact circuit | HAND-WRITTEN |
 | Text → netlist, Pawan's 20 sentences (T-7, evaluated once) | 0.75 exact circuit, component F1 0.986 | HAND-WRITTEN |
-| Text → netlist re-run after the 2026-11-04 fixes | Fresh 1.00 (optimistic), 30-sentence 1.00, Pawan's 0.75 unchanged | HAND-WRITTEN |
 | Training kill + resume (`train.py --auto`) | Resumed at epoch 2, then detected as finished | Real ultralytics, CPU |
-
-## Sync audit (2026-11-04)
-
-All of Pawan's work (PRs #5–#11) is on `main`, and no branch has unmerged commits. It was reviewed and kept as is. Fixes found during the review are in `5137acd`:
-- a malformed `voltage.dc` rotation no longer crashes `parse_voc`;
-- "330R" values are read in the image path as well as the text path;
-- "a pair of" counts as two;
-- NLP failures are no longer mislabelled "tokenization" because of a final full stop;
-- Gate 1 is prefilled in the notebook;
-- the convention is labelled as the Gate 1 decision;
-- Pawan's set is in `results/tables.md`.
 
 ## Reproduced by the teammate (T-1, 2026-11-02)
 
@@ -74,7 +61,7 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 
 | # | Who | Action |
 |---|---|---|
-| 1 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1 the decided values (`left`, `False`) are prefilled: check the sheets, then set `GATE1_APPROVED = True`. |
+| 1 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
 | 2 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
 | 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). The team fills the report by hand; Claude updates EXPERIMENTS.md and the docs from it. Demo: [`DEMO.md`](DEMO.md). |
 | 4 | Done | Independent review of the Gate 1 and Gate 2 evidence (T-2): Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)). |
