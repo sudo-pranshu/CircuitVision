@@ -1,0 +1,12 @@
+* drafter_12/C138_D1_P1.jpg
+* ground: implicit: first source, second terminal
+D1 0 6 DMOD
+C1 7 9 1u
+R1 7 9 1k
+V1 10 0 DC 5
+C2 0 10 1u
+.model DMOD D
+* WARNING L1: found 1 terminals [7], skipped
+* WARNING L2: found 1 terminals [7], skipped
+.op
+.end

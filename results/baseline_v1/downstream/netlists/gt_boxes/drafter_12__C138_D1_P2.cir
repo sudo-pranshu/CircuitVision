@@ -1,0 +1,10 @@
+* drafter_12/C138_D1_P2.jpg
+* ground: implicit: most connected net
+C1 10 11 1u
+D1 2 3 DMOD
+.model DMOD D
+* WARNING R1: found 1 terminals [0], skipped
+* WARNING L1: found 1 terminals [7], skipped
+* WARNING V1: found 1 terminals [13], skipped
+.op
+.end

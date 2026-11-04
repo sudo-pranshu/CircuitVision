@@ -1,0 +1,7 @@
+{
+ "approved": true,
+ "plus_at_0": "left",
+ "cghd_clockwise": false,
+ "notes": "Battery and diode/LED sheets: + or anode on the left at 0, counter-clockwise turn (+ at bottom at 90, top at 270). voltage.dc labelled 0 with + on top, corrected in parse_voc. Same as the local check of 2026-11-02; reviewed by Pranshu in issue #7.",
+ "time": "2026-11-04T01:59:57.331190"
+}

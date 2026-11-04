@@ -1,0 +1,7 @@
+* drafter_12/C136_D1_P4.jpg
+* ground: implicit: first source, second terminal
+R1 1 0 1k
+C1 2 0 1u
+V1 2 0 DC 5
+.op
+.end

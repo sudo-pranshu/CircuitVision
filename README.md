@@ -12,9 +12,9 @@ text ─► tokenize ─► HMM tagger (Viterbi) ─► chunking + series/parall
 
 ## Status
 
-**No real-photo results exist yet.** The pipeline is implemented and tested, and every stage has been executed end to end on CPU against synthetic data in the real CGHD format. The real CGHD experiment (`baseline_v1`) is ready to run on Colab. See [EXPERIMENTS.md](EXPERIMENTS.md); every result there is labelled **REAL CGHD**, **SYNTHETIC/CONTROLLED** or **UNTESTED**.
+**Real CGHD results (`baseline_v1`, test drafter 12):** detection mAP50 **0.904** and mAP50-95 **0.611**. With ground-truth boxes, **37.5%** of the 48 analog test photos reconstruct to the correct circuit, and **10.4%** with detected boxes; battery terminals and handwritten labels are the main limits. Details are in [EXPERIMENTS.md](EXPERIMENTS.md#results-baseline_v1), and the files in [`results/baseline_v1/`](results/baseline_v1/). Every result is labelled **REAL CGHD**, **SYNTHETIC/CONTROLLED** or **UNTESTED**.
 
-| Result (all synthetic or controlled) | Value | Source |
+| Result (synthetic or controlled) | Value | Source |
 |---|---|---|
 | Wire tracing on synthetic photos with known graphs (11 conditions) | 0.994 exact topology | `results/synthetic_topology.json` |
 | Text → netlist, fresh 20-sentence test set (evaluated once) | 0.90 exact circuit, 1.00 token accuracy | `results/nlp_eval_fresh.json` |

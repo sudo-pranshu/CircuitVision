@@ -1,0 +1,9 @@
+* drafter_12/C135_D2_P1.jpg
+* ground: implicit: most connected net
+D1 1 0 DMOD
+D2 0 1 DMOD
+D3 0 5 DMOD
+D4 5 0 DMOD
+.model DMOD D
+.op
+.end

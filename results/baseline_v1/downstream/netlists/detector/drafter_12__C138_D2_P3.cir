@@ -1,0 +1,10 @@
+* drafter_12/C138_D2_P3.jpg
+* ground: implicit: first source, second terminal
+V1 4 0 DC 5
+D1 0 2 DMOD
+R1 3 4 1k
+C1 3 4 1u
+L1 2 3 5
+.model DMOD D
+.op
+.end

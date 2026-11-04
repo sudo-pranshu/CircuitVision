@@ -1,0 +1,8 @@
+* drafter_12/C133_D1_P4.jpg
+* ground: implicit: first source, second terminal
+R1 6 7 1k
+L1 2 7 1m
+V1 6 0 DC 5
+* WARNING C1: found 1 terminals [6], skipped
+.op
+.end

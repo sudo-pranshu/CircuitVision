@@ -13,12 +13,10 @@ Every result carries one of three labels: **REAL CGHD**, **SYNTHETIC/CONTROLLED*
 | Text → netlist: 30-sentence set 0.80 → 1.00 exact (optimistic); fresh 20-sentence set 0.90; Pawan's 20-sentence set (T-7) 0.75. Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), others unchanged | CONTROLLED (hand-written) | `results/nlp_eval*.json`, `results/nlp_rerun_2026-11-04/` |
 | `train.py`, `detector_eval.py`, `evaluate.py --weights --ocr`, `orientation.py`, `report_tables.py` | Executed end to end on CPU (torch 2.14, ultralytics 8.4.184) | Synthetic data only; numbers carry no meaning about real photos |
 | CGHD audit, rotation convention (`PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`), label overlays | REAL CGHD (dataset checks, no model metric) | Run locally on the MD5-checked v14 zip, 2026-11-02; Gates 1 and 2 approved by Pawan. See the findings below |
-| YOLOv8s detection on test drafter 12 | UNTESTED | Training in progress on Colab (epoch 20/100 on 2026-11-04); tested on drafter 12 after it finishes |
-| Downstream stages on real photos (GT boxes / detector) | UNTESTED | Awaiting the Colab run |
+| YOLOv8s detection on test drafter 12: mAP50 0.904, mAP50-95 0.611 | REAL CGHD | `results/baseline_v1/test/metrics.json`; see Results below |
+| Downstream on real photos: 37.5% (GT boxes) and 10.4% (detector) of 48 analog photos match the reference topology | REAL CGHD | `results/baseline_v1/downstream/`; see Results below |
 
-No REAL CGHD metric exists yet, and nothing here may be reported as a real-photo result until `baseline_v1` has run.
-
-Why it hasn't run: training needs a GPU. At the fixed settings, a 16 GB Apple M5 took about 132 s per batch (about 29 days for 100 epochs), so the experiment runs on Colab.
+`baseline_v1` ran on Colab on 2026-11-04; its REAL CGHD results are in [Results: baseline_v1](#results-baseline_v1). Training needs a GPU: at the fixed settings, a 16 GB Apple M5 took about 132 s per batch (about 29 days for 100 epochs).
 
 ## Findings from real CGHD annotations (before any training)
 
@@ -223,10 +221,76 @@ The synthetic GT-box run above was repeated on Linux (Python 3.13, ngspice 42) a
 
 ## Results: baseline_v1
 
-*Pending. To be filled only from files in the evidence bundle.*
+**REAL CGHD.** Run on Colab, 2026-11-04. Every number below comes from the evidence bundle; the files that matter are copied to [`results/baseline_v1/`](results/baseline_v1/), and the full tables are in [`results/baseline_v1/tables.md`](results/baseline_v1/tables.md). Test drafter 12 was not looked at to make any training or gate decision.
 
-The required statement at this stage:
+### Run record
 
-> Detection baseline established; downstream real-photo performance is still being evaluated.
+| Item | Value | Source |
+|---|---|---|
+| Dataset | CGHD v14, MD5 `ab1cde6feb5edaafbde711cd2059a2f4` | `dataset_md5.txt` |
+| Split | train 2,981 images and 210,782 objects; validation drafter 11, 96 images and 4,032 objects; test drafter 12, 96 images and 1,628 objects | `conversion_stats.json` |
+| Gates | Gate 1 `left` / `False` (Pawan, reviewed by Pranshu, issue #7); Gate 2 approved | `gates/` |
+| Config | `train.BASELINE`: YOLOv8s from COCO, 100 epochs planned, imgsz 1024, batch 16, SGD, patience 30, seed 0 | `train_config.json`, `args.yaml` |
+| **Training length** | **Stopped early at epoch 73**: no validation improvement for 30 epochs. Best epoch **43** (validation mAP50 0.940, mAP50-95 0.627); `best.pt` from that epoch is evaluated | `logs/train.log`, `results.csv` |
+| **Hardware** | **Epochs 1–33 on a Tesla T4** (five sessions, resumed from `last.pt`), **epochs 34–73 on an A100-SXM4-40GB** (one session, 0.45 h). The best epoch was trained on the A100. Same config throughout; only the GPU changed | `logs/setup.log`, `logs/train.log`, `gpu.txt` (last session only) |
+| Code | Sessions cloned `aa1df19`, `5a0d825` and finally `31ea206`, all on `main`. The only training-related difference is a guard for malformed `voltage.dc` rotations, and CGHD v14 has none; every session confirmed the conversion was identical to the one approved at Gate 2 | `commit.txt`, `logs/setup.log` |
+| Packages | torch 2.11.0 (CUDA 13), ultralytics 8.4.184, EasyOCR 1.7.2, OpenCV headless 4.10.0.84 | `pip_freeze.txt` |
 
-This statement applies only once step 5 has actually run.
+### Detection on test drafter 12 (REAL CGHD)
+
+96 photos, 1,628 symbols. Source: `test/metrics.json`.
+
+| | P | R | mAP50 | mAP50-95 |
+|---|---|---|---|---|
+| **all classes** | **0.886** | **0.875** | **0.904** | **0.611** |
+| resistor | 0.963 | 1.000 | 0.995 | 0.766 |
+| capacitor | 0.739 | 1.000 | 0.972 | 0.682 |
+| inductor | 0.980 | 0.833 | 0.953 | 0.678 |
+| voltage source | 0.608 | 0.594 | **0.482** | 0.257 |
+| diode | 0.966 | 0.714 | 0.939 | 0.706 |
+| junction | 0.943 | 0.874 | 0.906 | 0.411 |
+| crossover | 0.947 | 1.000 | 0.994 | 0.655 |
+| text | 0.941 | 0.982 | 0.989 | 0.736 |
+
+At confidence 0.25: 1,526 true positives, 181 false positives, 102 misses. The commonest confusion is **voltage source → capacitor (9)**. Drafter 12 has no `gnd` symbols, so ground detection is not measured here.
+
+### Orientation (REAL CGHD)
+
+| What | Result | Source |
+|---|---|---|
+| Classifier on real test crops | voltage source 0.906 (32 crops), diode 0.775 (40) | `orientation.json` |
+| In the pipeline, ground-truth boxes | 0.833 (72 polarised symbols) | `downstream/summary.json` |
+| In the pipeline, detector boxes (matched to ground truth) | 0.639 | same |
+
+The voltage-source test crops were also seen on 2026-11-02 while choosing the `voltage.dc` fix (Full dataset checks, above), so the 0.906 is slightly optimistic. The test counts are small.
+
+### OCR (REAL CGHD)
+
+EasyOCR on the 656 ground-truth text boxes: **0.021 exact, 0.148 character accuracy**. The labels are mostly handwritten words ("Resistor", "DC Source", "R1"); EasyOCR is trained on printed text. Only **4 labels are values**, so value reading is effectively **not measured** on this test drafter. Source: `downstream/summary.json`, `downstream/ocr.csv`.
+
+### Downstream: netlists on real photos (REAL CGHD)
+
+Read these with two facts in mind:
+- **Half the test photos have nothing to reconstruct.** Circuits C139–C144 (48 photos) are logic-gate diagrams with no in-scope parts. They always give empty netlists ("no ground node"). The meaningful base is the **48 analog photos** (C133–C138).
+- **"Valid" is not "correct".** A netlist can pass the grammar and semantic checks and still be the wrong circuit. **Topology match against the reference netlists** (T-3, checked against the photos) is the measure of correctness.
+
+| 48 analog photos | Ground-truth boxes | Detector boxes |
+|---|---|---|
+| Valid netlist | 12 (25%) | 20 (42%) |
+| **Topology match vs reference** | **18 (37.5%)** | **5 (10.4%)** |
+| Exact match (values too) | 18 | 3 |
+
+C137, the only circuit with nothing out of scope (8 photos): ground-truth boxes give 1 of 8 correct, including the simulated operating point. The detector gives 0 of 8, though 5 of its 8 netlists are "valid". The detector adds false parts, such as a capacitor on top of the battery, and they happen to close the loose ends.
+
+Computed from `downstream/gt_boxes.csv` and `downstream/detector.csv`, keeping rows whose image name matches `C13[3-8]_`. The full-set figures (all 96 photos, proxies, consistency) are in `tables.md`.
+
+### Where downstream fails (error analysis, C-3)
+
+- **Battery terminals are the main bottleneck.** With ground-truth boxes, a part that ends up with other than two terminals is dropped from the netlist. Across the 48 analog photos there are 32 such drops: **voltage source 16**, capacitor 5, resistor 4, diode 4, inductor 3. A typical case is `C137_D1_P2`: the battery is found with 3 terminals instead of 2, probably because its long plates stick out of the box and are traced as wires. Source: `downstream/netlists/gt_boxes/`.
+- **Wire gaps on real photos** split a net that should be one, for example the bottom wire in C136 (`R1 6 9` against `V1 5 0`).
+- **Label text attached as a value.** A label such as "Resistor 2" gives a "2" that is attached as 2 Ω, so exact match fails even when the topology is right.
+- **Detector false positives** make wrong netlists look valid (above), and voltage sources are the weakest class.
+
+### Summary statement
+
+> Detection baseline established on the real test drafter: mAP50 0.904 and mAP50-95 0.611, with the voltage source the weakest class. Downstream, with perfect boxes, 37.5% of the analog test photos reconstruct to the correct circuit and 10% with detected boxes. Wire tracing at battery symbols, and OCR on handwritten labels, are the main limitations.

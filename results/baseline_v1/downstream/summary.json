@@ -1,0 +1,157 @@
+{
+ "drafters": "12",
+ "images": 96,
+ "in_scope_images": 8,
+ "ngspice": true,
+ "rotation_convention": {
+  "PLUS_AT_0": "left",
+  "CGHD_CLOCKWISE": false,
+  "source": "environment (set after Gate 1)"
+ },
+ "detector_conf": 0.35,
+ "images_by_frame": {
+  "frame_upright": 96
+ },
+ "orientation": {
+  "gt_boxes_accuracy": 0.8333,
+  "gt_boxes_n": 72,
+  "detector_accuracy_on_matched_gt": 0.6389
+ },
+ "ocr": {
+  "labels": 656,
+  "exact": 0.0213,
+  "char_accuracy": 0.1477,
+  "value_like_labels": 4,
+  "value_like_exact": 0.0,
+  "value_like_char_accuracy": 0.0
+ },
+ "gt_boxes": {
+  "all": {
+   "images": 96,
+   "topology_terminals_ok_PROXY": 0.8111,
+   "netlist_valid": 0.125,
+   "simulates": 0.4271,
+   "ground_rule": {
+    "implicit: first source, second terminal": 16,
+    "implicit: most connected net": 30,
+    "none": 50
+   },
+   "top_validation_errors": [
+    [
+     "no ground node (N)",
+     51
+    ],
+    [
+     "node N is floating (N connection)",
+     33
+    ]
+   ],
+   "consistency_PROXY": {
+    "pairs": 144,
+    "consistent": 0.7708,
+    "drawings": 24
+   },
+   "vs_reference": {
+    "topology_match": 0.375,
+    "exact_match": 0.375,
+    "op_match": 0.125,
+    "n": 48
+   }
+  },
+  "in_scope_only": {
+   "images": 8,
+   "topology_terminals_ok_PROXY": 0.8,
+   "netlist_valid": 0.125,
+   "simulates": 1.0,
+   "ground_rule": {
+    "implicit: first source, second terminal": 2,
+    "implicit: most connected net": 6
+   },
+   "top_validation_errors": [
+    [
+     "node N is floating (N connection)",
+     7
+    ]
+   ],
+   "consistency_PROXY": {
+    "pairs": 12,
+    "consistent": 0.3333,
+    "drawings": 2
+   },
+   "vs_reference": {
+    "topology_match": 0.125,
+    "exact_match": 0.125,
+    "op_match": 0.125,
+    "n": 8
+   }
+  }
+ },
+ "detector": {
+  "all": {
+   "images": 96,
+   "topology_terminals_ok_PROXY": 0.7899,
+   "netlist_valid": 0.2083,
+   "simulates": 0.3854,
+   "ground_rule": {
+    "implicit: most connected net": 28,
+    "implicit: first source, second terminal": 23,
+    "none": 45
+   },
+   "top_validation_errors": [
+    [
+     "no ground node (N)",
+     49
+    ],
+    [
+     "node N is floating (N connection)",
+     26
+    ],
+    [
+     "syntax error at line N near 'N'",
+     1
+    ]
+   ],
+   "consistency_PROXY": {
+    "pairs": 144,
+    "consistent": 0.5625,
+    "drawings": 24
+   },
+   "vs_reference": {
+    "topology_match": 0.1042,
+    "exact_match": 0.0625,
+    "op_match": 0.0,
+    "n": 48
+   },
+   "struct_match_vs_gt_boxes": 0.6562,
+   "isomorphic_to_gt_boxes": 0.6458
+  },
+  "in_scope_only": {
+   "images": 8,
+   "topology_terminals_ok_PROXY": 0.8821,
+   "netlist_valid": 0.625,
+   "simulates": 1.0,
+   "ground_rule": {
+    "implicit: first source, second terminal": 5,
+    "implicit: most connected net": 3
+   },
+   "top_validation_errors": [
+    [
+     "node N is floating (N connection)",
+     3
+    ]
+   ],
+   "consistency_PROXY": {
+    "pairs": 12,
+    "consistent": 0.25,
+    "drawings": 2
+   },
+   "vs_reference": {
+    "topology_match": 0.0,
+    "exact_match": 0.0,
+    "op_match": 0.0,
+    "n": 8
+   },
+   "isomorphic_to_gt_boxes": 0.25
+  }
+ }
+}
