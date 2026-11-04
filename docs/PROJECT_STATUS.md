@@ -6,7 +6,7 @@ Updated 2026-11-02 · `main` · Full reference: [PROJECT_BIBLE.md](PROJECT_BIBLE
 
 The pipeline (image → netlist → validation → simulation, plus text → netlist) is **implemented, tested and verified on synthetic data**.
 
-**The real CGHD experiment (baseline_v1) has not run yet**, so no baseline metric exists. The project is **not complete** until it runs. The real dataset has been audited and Gates 1 and 2 are decided; see [EXPERIMENTS.md](../EXPERIMENTS.md#full-dataset-checks-2026-11-02-md5-checked-v14).
+**The real CGHD experiment (baseline_v1) has not run yet**, so no baseline metric exists. The project is **not complete** until it runs. The real dataset has been audited, Gates 1 and 2 are decided, and the label fixes are on `main` (PR #5, merged 2026-11-02), so the run is ready to start on Colab; see [EXPERIMENTS.md](../EXPERIMENTS.md#full-dataset-checks-2026-11-02-md5-checked-v14).
 
 ## What works
 
@@ -21,13 +21,13 @@ The pipeline (image → netlist → validation → simulation, plus text → net
 
 ## Final report
 
-The submission report (Word, institute template, 47 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Every real-CGHD value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences; the cover's date of submission is also a highlighted placeholder. After the Colab run, Claude replaces the pending values from the evidence files and rebuilds.
+The submission report (Word, institute template, 47 pages) is built from [`report/`](../report/README.md) with `bash report/build.sh`. Every real-CGHD value is highlighted `PENDING: real CGHD run` in Section 6.3 and a few sentences; the cover's date of submission is also a highlighted placeholder. After the Colab run, Claude replaces the pending values from the evidence files and rebuilds. The report still gives the earlier count of 107 tests, in the text and in the per-file test table; update these at the same time.
 
 ## Tested
 
 | What | Result | Label |
 |---|---|---|
-| Unit and regression tests | 107 pass (`pytest -q`) | — |
+| Unit and regression tests | 110 pass (`pytest -q`, macOS, ngspice present) | — |
 | Wire tracing, 11 photo conditions | 0.994 exact topology | SYNTHETIC |
 | Detector-mode end to end (synthetic YOLO, 6 images) | 0.83 topology, 0.67 exact/op match | SYNTHETIC |
 | Text → netlist, fresh 20 sentences (evaluated once) | 0.90 exact circuit | HAND-WRITTEN |
@@ -39,7 +39,7 @@ macOS on Apple Silicon, Python 3.13.18, full install with OpenCV headless 4.10.0
 
 | What | Result |
 |---|---|
-| `pytest -q` | 107 pass, 0 skipped |
+| `pytest -q` | 107 pass, 0 skipped (before the three label-fix regression tests) |
 | Divider example with `--simulate` | Valid; v(2) = 0.4545 V |
 | `results/tables.md` | Identical |
 | `synthetic_topology.json` and `.txt` | Identical |
@@ -60,11 +60,11 @@ Not reproduced: detector-mode end to end, which needs a 40-epoch CPU training ru
 
 | # | Who | Action |
 |---|---|---|
-| 1 | Pawan and Pranshu | Merge the placeholder-size and `voltage.dc` fixes into `main`; the notebook clones `main`, and without them it trains on misplaced labels. |
-| 2 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
-| 3 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
-| 4 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
-| 5 | Teammate | Onboarding (Bible §15), then tasks T-1, T-2 and T-3 (Bible §11.3). Proof-read `report/content.js` against `results/` (T-5). |
+| 1 | Whoever runs Colab | Colab → open `notebooks/train_colab.ipynb` from GitHub `main` → T4 GPU → **Run all**. At Gate 1, set `PLUS_AT_0 = 'left'` and `CGHD_CLOCKWISE = False`. |
+| 2 | Whoever runs Colab | Run all → confirm the 24 overlays look right → set Gate 2 → Run all (training takes about 3–5 h; after a disconnect, Run all again). |
+| 3 | Whoever runs Colab → Claude | Send `baseline_v1_evidence.zip` (also saved to `MyDrive/CircuitVision/experiments/`). Claude fills the report, slides and EXPERIMENTS.md from it. |
+| 4 | Someone other than Pawan | Independent review of the Gate 1 and Gate 2 evidence (T-2); Pawan decided both gates. No reviewer is recorded yet. |
+| 5 | Teammate | Write the drafter-12 reference netlists (T-3). After step 3, check the report's numbers against `results/` and the evidence zip (T-5). |
 
 ## Commands
 

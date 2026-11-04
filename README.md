@@ -32,7 +32,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
 bash scripts/pin_opencv.sh        # exactly one OpenCV build; run after every pip install
 brew install ngspice              # Linux: apt install ngspice
-pytest -q                         # ~107 tests, a few skip without ngspice
+pytest -q                         # ~110 tests, a few skip without ngspice
 ```
 
 Only the base install is needed for wire tracing, netlists, grammar, simulation, NLP and the tests (`pip install -e ".[dev]"`). `detect` adds YOLO and EasyOCR (PyTorch); `app` adds Gradio. OpenCV is capped below 5, which has no `cv2.HOGDescriptor`.
