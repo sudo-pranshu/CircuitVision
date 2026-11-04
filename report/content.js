@@ -223,6 +223,8 @@ module.exports.chapters = [
  ["h2", "4.3 Data Preprocessing"],
  ["h3", "4.3.1 Annotation conversion"],
  ["p", "Each VOC object is mapped through the explicit class table ({tab:classmap}); boxes are clipped to the image and zero-area boxes are dropped, with every change counted in `conversion_stats.json`. YOLO labels are written as `class cx cy w h`, normalised by the annotated image size."],
+ ["p", "{fig:gate2} shows two of the 24 overlays checked at Gate 2, with the converted labels drawn on real photos. They show what the detector has to cope with: perspective, a shadow over half of the sheet in (a), dense junction dots and text labels everywhere. They also show the effect of the class mapping. The transformer windings in (a) are labelled as inductors, the photoresistor in (b) as a resistor, and the battery in (b) as a voltage source. The MOSFET in (a), and the eight-pin IC and the loudspeaker in (b), have no box at all, because they are out of scope; their ink is masked during wire tracing, but these circuits can never be reconstructed completely."],
+ ["fig", "fig_gate2_overlays.png", 600, "gate2", "Two Gate 2 label overlays: converted YOLO labels on real CGHD photos (CC BY 3.0); out-of-scope parts such as the MOSFET, IC and loudspeaker carry no box"],
  ["h3", "4.3.2 EXIF orientation"],
  ["p", "Phone photos often carry an EXIF orientation tag. Each image is decoded in the pixel frame its annotation refers to, chosen by matching the annotated size against the raw and EXIF-rotated frames. Images with an EXIF rotation are re-encoded without the tag, so that the trainer and every tool see exactly the pixels the boxes refer to, and these images are always included in the visual label check."],
  ["h3", "4.3.3 Binarisation"],
