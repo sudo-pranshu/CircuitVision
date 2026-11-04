@@ -76,6 +76,14 @@ def real_tables(exp: Path, label: str) -> list[str]:
         if "detector" in d:
             L.append(f"\nDetector vs GT-box netlists (isomorphic graphs): "
                      f"{_f(d['detector']['all'].get('isomorphic_to_gt_boxes'))}.\n")
+        refs = [(mode, sub, d[mode][sub]["vs_reference"]) for mode in ("gt_boxes", "detector")
+                for sub in ("all", "in_scope_only") if d.get(mode, {}).get(sub, {}).get("vs_reference")]
+        if refs:
+            L += ["\nAgainst the reference netlists (`references/`, T-3: drafted from the photos, checked by a person). op match is only "
+                  "counted for references with no omitted part.\n",
+                  "| mode | subset | images | topology match | exact match | op match |", "|---|---|---|---|---|---|"]
+            L += [f"| {m} | {s} | {r['n']} | {_f(r['topology_match'])} | {_f(r['exact_match'])} | {_f(r['op_match'])} |"
+                  for m, s, r in refs]
     else:
         L.append(NA + "\n")
     o = _load(exp / "orientation.json")

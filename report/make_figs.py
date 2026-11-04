@@ -27,7 +27,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 E2E = Path(sys.argv[2])            # synthetic run folder (synth_best.pt, cghd2/); only fig_detector needs it
 plt.rcParams.update({"font.family": "Liberation Serif", "font.size": 10, "axes.edgecolor": "#888",
                      "axes.labelcolor": "#222", "xtick.color": "#444", "ytick.color": "#444"})
-BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
+BLUE, ORANGE, AQUA, VIOLET = "#2a78d6", "#eb6834", "#1baf7a", "#7a4fc9"
 INK, MUTED, BOXFILL = "#1f2937", "#6b7280", "#eef3fb"
 
 
@@ -212,7 +212,7 @@ def fig_topology_chart():
 
 def fig_nlp_chart():
     sets = [("30-sentence, before", "nlp_eval_baseline.json"), ("30-sentence, after (optimistic)", "nlp_eval.json"),
-            ("Fresh 20-sentence (once)", "nlp_eval_fresh.json")]
+            ("Fresh 20-sentence (once)", "nlp_eval_fresh.json"), ("Teammate 20-sentence (once)", "nlp_eval_pawan.json")]
     metrics = [("token_accuracy", "Token acc."), ("macro_f1", "Macro F1"), ("exact_match", "Exact circuit"),
                ("component_f1", "Component F1")]
     paths = {"token_accuracy": ("tagging", "token_accuracy"), "macro_f1": ("tagging", "macro_f1"),
@@ -230,12 +230,12 @@ def fig_nlp_chart():
     data = np.array(data, float)
     fig, ax = plt.subplots(figsize=(6.6, 2.6))
     y = np.arange(len(metrics))[::-1]
-    for i, ((name, _), col, mk) in enumerate(zip(sets, (BLUE, ORANGE, AQUA), ("o", "s", "^"))):
-        ax.scatter(data[i], y + (1 - i) * 0.18, s=46, color=col, marker=mk, label=name, zorder=3,
+    for i, ((name, _), col, mk) in enumerate(zip(sets, (BLUE, ORANGE, AQUA, VIOLET), ("o", "s", "^", "D"))):
+        ax.scatter(data[i], y + (1.5 - i) * 0.14, s=46, color=col, marker=mk, label=name, zorder=3,
                    edgecolors="white", linewidths=0.8)
-    ax.set_yticks(y, [m[1] for m in metrics]); ax.set_xlim(0.75, 1.02); ax.set_ylim(-0.6, len(metrics) - 0.4)
-    ax.set_xlabel("Score (axis starts at 0.75)")
-    ax.legend(fontsize=7.5, frameon=False, loc="lower left", ncol=3, bbox_to_anchor=(0, 1.0))
+    ax.set_yticks(y, [m[1] for m in metrics]); ax.set_xlim(0.70, 1.02); ax.set_ylim(-0.6, len(metrics) - 0.4)
+    ax.set_xlabel("Score (axis starts at 0.70)")
+    ax.legend(fontsize=7.5, frameon=False, loc="lower left", ncol=2, bbox_to_anchor=(0, 1.0))
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     ax.grid(axis="x", color="#eee"); ax.set_axisbelow(True)

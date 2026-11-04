@@ -15,8 +15,10 @@ Per stage:
   topology     PROXY on real CGHD: share of elements with exactly 2 terminals,
                and cross-photo CONSISTENCY: the 4 photos of one drawing should
                give the same circuit graph (consistency is not correctness)
-  reference    only where a reference netlist exists (references/<stem>.cir,
-               e.g. synthetic data): topology_match, exact_match, op_match
+  reference    only where a reference netlist exists (references/<stem>.cir beside
+               the data, e.g. synthetic; or the repo's references/drafter_N/ files
+               per drawing, task T-3): topology_match, exact_match, op_match
+               (op_match is skipped for references with an omitted part)
   netlist / validation / simulation
 
 Images containing out-of-scope symbols (transistors, ICs, lamps, ...) cannot be
@@ -46,6 +48,30 @@ from .pipeline import detections_from_xml, run
 from .types import Detection
 
 STEM = re.compile(r"^(C-?\d+)_(D\d+)_")
+REPO_REFS = Path(__file__).resolve().parents[2] / "references"
+
+
+def find_reference(xml: Path, repo_refs: Path = REPO_REFS) -> Path | None:
+    """Reference netlist for one photo, or None.
+
+    First a per-photo file beside the dataset (references/<stem>.cir, as the
+    synthetic data writes it), then the repository's hand-made file for the
+    whole drawing (references/drafter_N/<circuit>_<drawing>.cir, task T-3),
+    which covers all four photos P1-P4.
+    """
+    local = xml.parent.parent / "references" / f"{xml.stem}.cir"
+    if local.exists():
+        return local
+    m = STEM.match(xml.stem)
+    drawing = repo_refs / xml.parent.parent.name / f"{m[1]}_{m[2]}.cir" if m else None
+    return drawing if drawing and drawing.exists() else None
+
+
+def compare_to_reference(pred: str, ref: str, sim: bool) -> dict:
+    # a reference with an out-of-scope part left out has floating nodes and can't be
+    # simulated, so op_match is None (not counted) instead of a false mismatch
+    reduced = any(l.startswith("* omitted:") for l in ref.splitlines())
+    return compare(pred, ref, simulate_op=sim and not reduced)
 
 
 def signature(comps):
@@ -187,8 +213,8 @@ def main():
         drafter = xml.parent.parent.name
         name = f"{drafter}/{img_path.name}"
         unsupported = sum(d.cls == OTHER for d in gt)
-        ref_path = xml.parent.parent / "references" / f"{xml.stem}.cir"
-        ref = ref_path.read_text() if ref_path.exists() else None
+        ref_path = find_reference(xml)
+        ref = ref_path.read_text() if ref_path else None
         row = {"image": name, "unsupported_symbols": unsupported, "in_scope": int(unsupported == 0)}
 
         if orient:
@@ -207,7 +233,7 @@ def main():
         (out / "netlists" / "gt_boxes" / f"{drafter}__{xml.stem}.cir").write_text(text)
         r["netlist"] = text
         if ref:
-            c = compare(text, ref, simulate_op=sim)
+            c = compare_to_reference(text, ref, sim)
             r.update(c)
             ref_rows["gt_boxes"].append({**c, "in_scope": row["in_scope"]})
         gt_rows.append({**row, **r})
@@ -226,7 +252,7 @@ def main():
             r["struct_match_vs_gt_boxes"] = int(signature(comps) == signature(gt_comps))
             r["isomorphic_to_gt_boxes"] = int(isomorphic(text, gt_rows[-1]["netlist"], values=False))
             if ref:
-                c = compare(text, ref, simulate_op=sim)
+                c = compare_to_reference(text, ref, sim)
                 r.update(c)
                 ref_rows["detector"].append({**c, "in_scope": row["in_scope"]})
             det_rows.append({**row, **r})
