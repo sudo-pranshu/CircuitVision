@@ -12,7 +12,7 @@ text ─► tokenize ─► HMM tagger (Viterbi) ─► chunking + series/parall
 
 ## Status
 
-**Real CGHD results (`baseline_v1`, test drafter 12):** detection mAP50 **0.904** and mAP50-95 **0.611**. With ground-truth boxes, **37.5%** of the 48 analog test photos reconstruct to the correct circuit, and **10.4%** with detected boxes; battery terminals and handwritten labels are the main limits. Details are in [EXPERIMENTS.md](EXPERIMENTS.md#results-baseline_v1), and the files in [`results/baseline_v1/`](results/baseline_v1/). Every result is labelled **REAL CGHD**, **SYNTHETIC/CONTROLLED** or **UNTESTED**.
+**Real CGHD results (`baseline_v1`, test drafter 12):** detection mAP50 **0.904** and mAP50-95 **0.611**. With ground-truth boxes, **37.5%** of the 48 analog test photos reconstruct to the correct circuit, and **10.4%** with detected boxes; battery terminals and handwritten labels are the main limits. Details are in [EXPERIMENTS.md](EXPERIMENTS.md#results-baseline_v1), and the files in [`results/baseline_v1/`](results/baseline_v1/). Every result is labelled **REAL CGHD**, **SYNTHETIC/CONTROLLED** or **UNTESTED**. The final report is [`report/CircuitVision_Mini_Project_Report.pdf`](report/CircuitVision_Mini_Project_Report.pdf); user-input testing is in [`docs/USER_INPUT_TESTING.md`](docs/USER_INPUT_TESTING.md).
 
 | Result (synthetic or controlled) | Value | Source |
 |---|---|---|
@@ -33,7 +33,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[detect,app,dev]"
 bash scripts/pin_opencv.sh        # exactly one OpenCV build; run after every pip install
 brew install ngspice              # Linux: apt install ngspice
-pytest -q                         # 129 tests, a few skip without ngspice
+pytest -q                         # 139 tests, a few skip without ngspice
 ```
 
 Only the base install is needed for wire tracing, netlists, grammar, simulation, NLP and the tests (`pip install -e ".[dev]"`). `detect` adds YOLO and EasyOCR (PyTorch); `app` adds Gradio. OpenCV is capped below 5, which has no `cv2.HOGDescriptor`.

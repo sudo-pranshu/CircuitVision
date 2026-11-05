@@ -291,6 +291,10 @@ Computed from `downstream/gt_boxes.csv` and `downstream/detector.csv`, keeping r
 - **Label text attached as a value.** A label such as "Resistor 2" gives a "2" that is attached as 2 Ω, so exact match fails even when the topology is right.
 - **Detector false positives** make wrong netlists look valid (above), and voltage sources are the weakest class.
 
+### Post-hoc fix (2026-11-04, measured after seeing the test results)
+
+A user photo exposed a faint stretch of pen that split one straight wire. Gaps are now also closed along straight horizontal and vertical lines (`topology.extract_nets`), never sideways. Re-running the GT-box downstream evaluation on the same 48 analog photos gives **21 correct circuits instead of 18**, with no photo worse; the synthetic topology benchmark is identical (0.994). Because it was measured after the test results were known, the baseline figures above remain the reported result. Detector-mode downstream was not re-run.
+
 ### Summary statement
 
 > Detection baseline established on the real test drafter: mAP50 0.904 and mAP50-95 0.611, with the voltage source the weakest class. Downstream, with perfect boxes, 37.5% of the analog test photos reconstruct to the correct circuit and 10% with detected boxes. Wire tracing at battery symbols, and OCR on handwritten labels, are the main limitations.

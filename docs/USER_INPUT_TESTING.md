@@ -4,7 +4,7 @@ Does CircuitVision work when someone who doesn't know its internals types a circ
 
 **Summary.**
 - **Text input:** tested on 20 typed descriptions through the real CLI and the app. 12 of the 15 with a definite answer give the electrically correct circuit. Three sentence structures still give a wrong circuit. Unclear or invalid input is now reported instead of being silently guessed.
-- **Image input:** **not yet tested on any real user photo.** None were available, and synthetic or benchmark images were not substituted. The real model was run through the app on two CGHD test photos as a sanity check only.
+- **Image input:** **2 real user photos tested** (section 4). A hand-drawn circuit on plain paper is reconstructed with the correct topology after the faint-wire fix; one on ruled notebook paper fails. The real model was also run through the app on two CGHD test photos as a sanity check.
 
 Results here are kept apart from the CGHD benchmark (`results/baseline_v1/`) and the synthetic experiments.
 
@@ -86,12 +86,15 @@ Each fix is general, has a regression test, and was checked against all previous
 | Photo report: each part's confidence, uncertain parts flagged, parts left out, defaulted values, guessed ground, **one symbol with two labels**, and validation errors explained | `app.py` (`image_report`) | A wrong reconstruction was shown with no sign of doubt. |
 | Overlay labels scale with the image, on a white background | `pipeline.overlay` | Labels were unreadable on full-size phone photos. |
 | Image test runner | `scripts/run_user_image_tests.py` | Scores real photos through the app's own handler. |
+| Straight-line gap bridging for faint wires | `topology.extract_nets` | User photo U01 split one wire at a faint pen stroke, leaving the netlist invalid; now correct. Post-hoc GT-box re-check on drafter 12: 18 → 21 of 48, none worse. |
+| "+5V" accepted; every OCR-read value listed in the report | `netlist.parse_value`, `ocr.py`, `app.py` | EasyOCR reads the handwritten + as 4 ("45V"), which can't be fixed safely, so the user is shown each value to check. |
+| Phone upload: QR code, Send from phone, result shown on the laptop | `app.py` (`--lan`) | Lets a user photograph a drawing with a phone during a demo. |
 
 **Not changed:** the baseline config, the model, the label conversion and the parser's structure rules. The three structural text failures (T02, T03, T05) would need new parser rules. Writing them to fit these sentences and then reporting the same sentences as passing would be tuning to the test.
 
 ## 6. Regression testing
 
-- `pytest -q`: **136 passed** (129 before this work; the 7 new tests cover the fixes).
+- `pytest -q`: **139 passed** (129 before this work; the new tests cover the text fixes, the app reports, phone upload and faint-wire bridging).
 - **The frozen NLP sets give per-sentence output identical** to their recorded runs, so the tokenizer change affects none of them:
     - 30-sentence set: 1.000;
     - fresh set: 1.000 (re-run after the audit fixes);
@@ -123,7 +126,7 @@ Each fix is general, has a regression test, and was checked against all previous
 
 ## 9. Remaining limitations and blockers
 
-1. **No real user photo has been tested.** Ten photos are needed, drawn by a person and photographed, each with its reference netlist; the plan is in `results/user_input_testing/images/README.md`. Until then, nothing in this document says whether the image path works for users.
+1. **Only 2 user photos have been tested** (1 correct topology, 1 failure on ruled paper). The 10-case plan in `results/user_input_testing/images/README.md` is 2/10 done.
 2. The parser misses three common sentence structures (T02, T03, T05). They produce **valid but wrong** circuits with no warning.
 3. Battery detection and battery wire tracing are the weakest points of the image path.
 4. Reading handwritten values hasn't been measured on real data.
