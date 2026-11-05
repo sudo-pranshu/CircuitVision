@@ -239,7 +239,7 @@ CircuitVision/
 ├── results/                  committed, small, synthetic/controlled results only
 ├── src/circuitvision/        the package (see table below)
 │   └── nlp/                  text → netlist
-└── tests/                    pytest suite (129 tests at 5137acd)
+└── tests/                    pytest suite (139 tests at f241a05)
     ├── data/cghd_real/       ONE real CGHD annotation (C145_D1_P1.xml), CC BY 3.0
     └── fake_cghd.py          tiny CGHD-format fixture generator
 ```
@@ -568,7 +568,7 @@ bash scripts/pin_opencv.sh                 # always last
 brew install ngspice                       # Linux: sudo apt install ngspice
 
 # tests
-pytest -q                                  # 129 tests at 5137acd
+pytest -q                                  # 139 tests at f241a05
 
 # image → netlist with ground-truth boxes (no model needed); writes out/divider.cir and an overlay
 python -m circuitvision.pipeline examples/divider.png --xml examples/divider.xml --simulate
@@ -693,6 +693,10 @@ The dates and hashes are from `git log`. "Tests" means the pytest suite at that 
 | 2026-11-04 | `36312d3` | **C-4:** downstream netlists scored against the repo references | `evaluate.py`, `report_tables.py`, `test_evaluate.py` | Unit tests |
 | 2026-11-04 | `5eab2ae`, `175555e`, `52a57d0` | Report updated (125 tests, teammate set, references); T-4 done; demo script; no slides | `report/`, `docs/DEMO.md` | — |
 | 2026-11-04 | `5137acd` | **Sync audit fixes:** malformed `voltage.dc` rotation, "330R" in both paths, "a pair of", NLP error categories, Gate 1 prefilled, convention label, teammate set in `tables.md`; 4 regression tests (129) | `cghd_to_yolo.py`, `netlist.py`, `nlp/`, notebook, `report_tables.py` | Synthetic GT-box run re-checked; NLP re-run (fresh set optimistic) |
+| 2026-11-04 | `633b854` | **baseline_v1 results recorded** (C-2, C-3): EXPERIMENTS results section, `results/baseline_v1/` | `EXPERIMENTS.md`, `results/baseline_v1/` | REAL CGHD |
+| 2026-11-04 | `9735ff9`, `036218a`, `c76669f` | **User-input testing:** text fixes (spelled units, reported assumptions, clear errors), app Text tab and uncertainty reporting, readable overlay, test runner | `nlp/`, `app.py`, `pipeline.py`, `docs/USER_INPUT_TESTING.md` | USER INPUT |
+| 2026-11-04 | `bbd89f8`, `069b567`, `2642cbb` | **Phone upload** (`--lan`, QR code, result on the laptop); **faint-wire bridging**; "+5V" parsing; OCR values listed | `app.py`, `topology.py`, `netlist.py`, `ocr.py` | Unit tests; post-hoc GT-box re-check |
+| 2026-11-04 | `5bd6d00`, `25196a1` | **Final report:** Pranshu's revision merged; real results, user testing and new figures; 46-page PDF | `report/` | — |
 
 **Measured on real CGHD (2026-11-04):** baseline_v1 detection, orientation, OCR and downstream topology on test drafter 12 (EXPERIMENTS, Results: baseline_v1). The full audit and rotation convention were checked on the real dataset on 2026-11-02 (§10).
 
@@ -702,14 +706,14 @@ Three early commits (`7012c16`, `d6069ef`, `bc76e79`) carry a different author n
 
 ## 10. Current status
 
-Status as of 2026-11-04, after the baseline_v1 run. Passing unit tests is **not** a real-photo result.
+Status as of 2026-11-05: project complete, final report ready. Passing unit tests is **not** a real-photo result.
 
 | Item | Status | Evidence |
 |---|---|---|
-| Repository | COMPLETE | Public; PRs #1–#13 merged. #12 (sync audit) was reverted and its two commits were cherry-picked through `feature/Pawan` (2026-11-04) |
+| Repository | COMPLETE | Public; PRs #1–#17 merged, none open. #12 (sync audit) was reverted and its two commits were cherry-picked through `feature/Pawan`; Pranshu's `pranshu-testing` report branch was merged in #17 |
 | Installation | COMPLETE | Extras pinned; `pin_opencv.sh`; installed in a clean venv |
-| Tests | COMPLETE | 129 pass (`pytest -q`, 2026-11-04): Linux (Python 3.13, ngspice 42) and macOS (ngspice 47) |
-| Dataset download | IN PROGRESS | Automated and MD5-checked in the notebook. An earlier Colab session reached the download and audit, but whether the zip is cached on the owner's Drive is **not verified from here**. |
+| Tests | COMPLETE | 139 pass (`pytest -q`, macOS, ngspice 47, 2026-11-05); 129 also passed on Linux before the user-testing work |
+| Dataset download | COMPLETE | MD5-checked v14 zip cached on Drive and reused by every Colab session |
 | Dataset audit | COMPLETE | Run by Pawan on the MD5-checked v14 zip on a Mac, 2026-11-02; the Colab run repeats it |
 | Annotation verification | COMPLETE | Full-dataset audit and Gate 2 overlays; found the placeholder XML sizes, now fixed |
 | Rotation convention | COMPLETE | Gate 1 decided by Pawan, 2026-11-02: `PLUS_AT_0=left`, `CGHD_CLOCKWISE=False`, plus the `voltage.dc` correction |
@@ -723,10 +727,10 @@ Status as of 2026-11-04, after the baseline_v1 run. Passing unit tests is **not*
 | Grammar validation | COMPLETE | Deterministic; unit-tested; input-independent |
 | ngspice simulation | COMPLETE | Unit-tested; operating points match references on synthetic data |
 | NLP evaluation | COMPLETE | Fresh set 0.90 and Pawan's set 0.75 exact (HAND-WRITTEN, 20 sentences each, evaluated once). Re-run after the 2026-11-04 fixes: fresh 1.00 (optimistic), Pawan's unchanged |
-| Gradio application | REAL-MODEL VERIFIED, USER PHOTOS UNTESTED | Photo and Text tabs; runs with baseline_v1 weights and reproduces the Colab netlists; reports confidences, dropped parts, defaults and double labels. No real user photo tested yet (USER_INPUT_TESTING.md) |
+| Gradio application | COMPLETE | Photo, Text and Send-from-phone tabs; baseline_v1 weights; reports confidences, dropped parts, defaults, double labels and OCR values; tested with 20 typed descriptions and 2 user photos (USER_INPUT_TESTING.md) |
 | Final report | COMPLETE | `report/CircuitVision_Mini_Project_Report.pdf` (46 pages, 2026-11-04): real baseline_v1 results in §6.3, user-input testing in §6.4, Gate 1 sheets and Gate 2 overlays |
 | Presentation | NOT NEEDED | No slide deck will be presented (decided 2026-11-04) |
-| Final demonstration | READY EXCEPT WEIGHTS | Script in [`DEMO.md`](DEMO.md); app checked on 2026-11-04 (starts, serves, processes a photo); needs `best.pt` and `models/` from Drive |
+| Final demonstration | READY | Script in [`DEMO.md`](DEMO.md); weights and models on Pawan's Mac; phone upload over Wi-Fi (`--lan`) tested 2026-11-04 |
 
 ---
 
@@ -763,8 +767,8 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | T-2 | Independent review of the Gate 1 and Gate 2 evidence (second pair of eyes). Pawan decided both gates, so a different reviewer was needed. Done: Pranshu agreed on 2026-11-04 ([issue #7](https://github.com/sudo-pranshu/CircuitVision/issues/7)) | P0 | P-1, P-3 | Evidence access | Short written note | Agreement or a documented disagreement |
 | T-3 | Done 2026-11-04: all 12 drafter-12 drawings with in-scope parts (C133–C138, D1 and D2; C139–C144 are logic gates). Drafted by Claude from the photos without running the pipeline, then checked against the photos by Pawan. Hand-write reference netlists for a sample of drafter-12 drawings (one `.cir` per drawing, in-scope symbols only) | P1 | P-1 (images) | Laptop + CGHD images | `references/` files plus a README describing the procedure | Each validates with `grammar.validate`; spot-checked by Pranshu |
 | T-4 | Done 2026-11-04: the related-work section is report Chapter 2 (§2.1–2.7); sources reviewed by Pawan. Literature review: CGHD paper and follow-ups, netlist extraction from sketches | P1 | — | — | Report related-work section | Citations checked |
-| T-5 | Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
-| T-6 | Reproducibility check: re-run `report_tables` from the evidence zip on a clean machine | P1 | P-5 | Laptop | Identical `tables.md` | Diff is empty |
+| T-5 | Open (Pawan). Report validation: check every number in the report against `results/` and the evidence zip | P0 | C-2 | — | List of mismatches | Zero unexplained numbers |
+| T-6 | Open (Pranshu). Reproducibility check: re-run `report_tables` from the evidence zip on a clean machine | P1 | P-5 | Laptop | Identical `tables.md` | Diff is empty |
 | T-7 | Done by Pawan, 2026-11-04: `handwritten_pawan.jsonl`, exact 0.75 (§12). Write 10–20 more hand-written NLP sentences as a new frozen set, before anyone looks at errors | P2 | — | Laptop | `nlp/data/<name>.jsonl` | Annotated like the existing sets; evaluated once |
 
 ---
@@ -784,7 +788,10 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 | NLP re-run after fixes | 2026-11-04 | `5137acd` | All three hand-written sets | "330R", "a pair of", error-category fix | CPU | Fresh 1.000 (**optimistic**: fixes target its 2 failures); 30-sentence 1.000; Pawan's 0.750 unchanged | [`results/nlp_rerun_2026-11-04/`](../results/nlp_rerun_2026-11-04/README.md) | HAND-WRITTEN |
 | GT-box re-check after PRs #5–#11 | 2026-11-04 | `5137acd` | Synthetic drafters 10–12 (18 images) | GT boxes, synthetic orientation models | CPU (Linux) | 18/18 topology, exact and op match; OCR 0.914 / 0.950; orientation 18/18 | `EXPERIMENTS.md` | SYNTHETIC |
 | NLP synthetic corpus | 2026-10-23 | `fdc275c` | Test split from the training templates; separate held-out phrasings | — | CPU | Same templates: token accuracy 1.000, exact 1.000. Held-out phrasings: token accuracy 0.897, exact 0.980. | [`results/nlp_synthetic.txt`](../results/nlp_synthetic.txt) | SYNTHETIC |
-| Orientation, OCR, topology on real photos | — | — | CGHD drafter 12 | — | — | — | — | **UNTESTED** |
+| baseline_v1 detection | 2026-11-04 | `31ea206` | CGHD v14 drafter 12 (96 photos) | YOLOv8s, best epoch 43 of 73 | Colab T4 + A100 | mAP@0.5 0.904, mAP@0.5:0.95 0.611, P 0.886, R 0.875 | [`results/baseline_v1/`](../results/baseline_v1/tables.md) | REAL CGHD |
+| baseline_v1 orientation, OCR, downstream | 2026-11-04 | `31ea206` | Same | HOG+SVM, EasyOCR, wire tracing | Colab | Orientation 0.906 / 0.775 (crops); OCR 0.021 exact (words); correct circuits 37.5% (GT boxes) and 10.4% (detector) of 48 analog photos | [`results/baseline_v1/`](../results/baseline_v1/tables.md) | REAL CGHD |
+| Faint-wire fix, post-hoc GT-box re-check | 2026-11-04 | `2642cbb` | Same 48 analog photos | GT boxes | CPU (macOS) | Correct circuits 21 of 48 (was 18), no photo worse; synthetic benchmark unchanged | `EXPERIMENTS.md` | REAL CGHD (post-hoc) |
+| User-input testing | 2026-11-04 | `a497f81`, `2642cbb` | 20 typed descriptions, 2 user photos | App and CLI | CPU (macOS) | Text: 12 of 15 correct; photos: 1 correct topology, 1 fail | [`USER_INPUT_TESTING.md`](USER_INPUT_TESTING.md) | USER INPUT |
 
 **Reproducing baseline_v1:** run the notebook (§7.4). The shell equivalent and the full configuration table are in [`EXPERIMENTS.md`](../EXPERIMENTS.md#baseline_v1-how-to-reproduce). The configuration is YOLOv8s (COCO-pretrained), imgsz 1024, batch 16, 100 epochs, patience 30, SGD lr0 0.01, seed 0, deterministic. **Do not change it for baseline_v1.**
 
@@ -794,10 +801,10 @@ The priorities are P0 (blocks submission), P1 (strongly improves it) and P2 (nic
 
 | Deliverable | Where | Status | Pending |
 |---|---|---|---|
-| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | Word file generated from [`report/`](../report/README.md) (`bash report/build.sh`); text in `report/content.js` | Written, 35 pages; updated 2026-11-04 (compact layout, name corrected to Pawan Shinde) | §6.3 real CGHD results and every other `[[PENDING: real CGHD run]]` marker; date of submission on the cover |
+| Final report (institute template: cover, preliminary pages, Chapters 1–7, references, appendices) | [`report/CircuitVision_Mini_Project_Report.pdf`](../report/CircuitVision_Mini_Project_Report.pdf) and `.docx`, generated from `report/content.js` with `bash report/build.sh` | Complete, 46 pages (2026-11-04): real results §6.3, user testing §6.4 | Exact submission date on the cover; T-5 number check |
 | Earlier report draft | Claude Docs artifact, private: https://claude.ai/artifact/J3GRtWxXebwtmNMUsKddFn | Superseded by the Word report | — |
 | Slide deck (14 slides) | Claude Slides artifact: https://claude.ai/artifact/1mx24Viff93aLYdbiYvkCD | Not presented (decided 2026-11-04) | — |
-| Live demo | [`DEMO.md`](DEMO.md) | Ready except the trained weights | `best.pt` and `models/` from Drive |
+| Live demo | [`DEMO.md`](DEMO.md) | Ready; phone upload over Wi-Fi | — |
 | Results tables | [`results/tables.md`](../results/tables.md) (synthetic); `experiments/baseline_v1/tables.md` (real, after the run) | Generated | The REAL section reads NOT AVAILABLE until the run |
 | Experiment protocol | [`EXPERIMENTS.md`](../EXPERIMENTS.md) | Current | "Results: baseline_v1" section |
 
@@ -821,7 +828,7 @@ Figures generated from artifacts: `results.png` (training curves), the confusion
 | Wire tracing | Assumes wires meet boxes from their sides. Touching wires merge; a pen gap wider than the gap-close distance splits a net. | Scale-adaptive parameters, gap closing, sliver removal | Acceptable for scope (synthetic 0.994) | Skeleton-graph tracing; learned wire segmentation |
 | Crossover vs junction | A crossover box shifted by about 15 % no longer covers the crossing, so nets merge. A crossing without a detected crossover symbol is treated as a connection. | Crossover opposite-side joining | Known (synthetic box jitter 15 %: 0.93) | Local line-direction analysis at crossings |
 | OCR | The allowlist reads values only (not names like `R1`); handwriting variation; label-to-element distance assumptions | Unit/class agreement, one label per element, distance limit | Unmeasured on real data | Fine-tuned recogniser; better text-to-element assignment |
-| Detection | Unknown real accuracy; rare classes may be weak | Fixed baseline; per-class AP will show it | Unmeasured | Paper split; more epochs/augmentation as a new, separately named experiment |
+| Detection | Voltage sources weak (AP@0.5 0.48), often also boxed as capacitors | Fixed baseline; per-class AP; app warns about double labels | Measured (0.904 mAP@0.5 overall) | Paper split; more epochs/augmentation as a new, separately named experiment |
 | Unsupported elements | Circuits with transistors, ICs, switches etc. cannot be fully reconstructed | Masked as "other"; in-scope-only subset reported | Accepted scope | Keypoint/terminal detection for multi-terminal parts |
 | Implicit ground | Picks a reference node when there's no ground symbol | Rule recorded in every netlist; comparison is ground-independent | Accepted | — |
 | Graph matching | Isomorphism by backtracking: exponential in the worst case | Circuits are small (tens of nets) | Accepted | — |
